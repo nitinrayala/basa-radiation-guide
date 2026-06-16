@@ -56,7 +56,32 @@
   - [x] Made frontend suggestion clicks use the structured `question` field when present.
   - [x] Cleaned Telugu mock-mode suggestions and Explain More text.
   - [x] Added Worker tests for English and Telugu suggestion behavior.
-- [ ] Phase 8: Add fallbacks and safety validation
-- [ ] Phase 9: Add tests
-- [ ] Phase 10: Configure GitHub Pages and Worker deployment
-- [ ] Phase 11: Final validation and documentation
+- [x] Phase 8: Add fallbacks and safety validation
+  - [x] Added a Worker-side safety classifier before retrieval and Groq answer generation.
+  - [x] Blocked diagnosis/report interpretation, treatment-technique recommendations, medication changes, stopping/skipping treatment, dose/session advice, survival predictions and unrelated topics.
+  - [x] Returned controlled doctor-discussion responses with safe follow-up suggestions for blocked questions.
+  - [x] Treated Groq interpretation `isOutsideScope` as a controlled safety response.
+  - [x] Added one retry for answer-generation failures before fallback.
+  - [x] Allowed useful non-JSON Groq answers to be used instead of over-triggering fallback.
+  - [x] Improved fallback answer formatting and fixed Telugu fallback strings.
+  - [x] Added Worker regression tests for safety and fallback behavior.
+- [x] Phase 9: Add tests
+  - [x] Added direct safety-classifier tests for report interpretation, treatment recommendations, medication changes, skipped treatment, dose/session advice, survival predictions and unrelated topics.
+  - [x] Added suggestion-generation tests for topic-specific follow-ups, deduplication and Explain More behavior.
+  - [x] Expanded chat API tests for malformed responses, source filtering and incomplete API payloads.
+  - [x] Expanded frontend tests to verify suggestion buttons submit their structured `question` value.
+  - [x] Added deployment-configuration tests for GitHub Pages asset paths, production Worker URL and Pages workflow artifact publishing.
+  - [x] Replaced corrupted Telugu test expectations with stable behavior-focused assertions where needed.
+- [x] Phase 10: Configure GitHub Pages and Worker deployment
+  - [x] Configured Vite production builds for GitHub Pages repository-subpath hosting with relative stable asset filenames.
+  - [x] Added GitHub Actions Pages deployment workflow using the `dist` artifact.
+  - [x] Added `.env.production` with the deployed Worker URL and no secrets.
+  - [x] Configured Cloudflare Worker deployment through `worker/wrangler.toml`.
+  - [x] Configured Worker CORS for GitHub Pages and local development origins.
+  - [x] Updated Worker local environment example to use `ALLOWED_ORIGINS`.
+  - [x] Added deployment configuration tests for Pages assets, Worker URL and workflow artifact publishing.
+- [x] Phase 11: Final validation and documentation
+  - [x] Replaced the README with current architecture, setup, content pipeline, retrieval, Groq, safety, fallback, deployment, testing and document-update instructions.
+  - [x] Documented mock mode, Worker secrets, GitHub Pages deployment and privacy limitations.
+  - [x] Ran lint, typecheck, test, content validation and production build successfully.
+  - [x] Deployed the final Worker update.

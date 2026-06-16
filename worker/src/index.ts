@@ -2,6 +2,7 @@ import { generateAnswer } from './answer'
 import { buildFallbackAnswer } from './fallback'
 import { interpretQuestion } from './interpretQuestion'
 import { retrieveForQuestion, toSourceLabels } from './retrieve'
+import { buildSafetyAnswer, classifySafety } from './safety'
 import { parseChatRequest, parsePositiveInteger, type ChatAnswer, type ChatResponse, type Env } from './schemas'
 
 const jsonHeaders = {
@@ -44,7 +45,25 @@ export default {
     }
 
     const chatRequest = parsedRequest.value
+    const localSafetyMatch = classifySafety(chatRequest)
+    if (localSafetyMatch) {
+      return jsonResponse(toChatResponse(buildSafetyAnswer(chatRequest, localSafetyMatch), []), 200, corsHeaders)
+    }
+
     const interpreted = await interpretQuestion(chatRequest, env)
+    if (interpreted.isOutsideScope) {
+      return jsonResponse(
+        toChatResponse(
+          buildSafetyAnswer(chatRequest, {
+            category: 'outside_scope',
+          }),
+          [],
+        ),
+        200,
+        corsHeaders,
+      )
+    }
+
     const retrievalResults = retrieveForQuestion(interpreted, chatRequest.question, 6)
     const retrievedChunks = retrievalResults.map((result) => result.chunk)
 
@@ -55,16 +74,17 @@ export default {
       answer = buildFallbackAnswer(chatRequest, retrievedChunks, true, interpreted)
     }
 
-    const sourceLabels = toSourceLabels(retrievedChunks)
-    const response: ChatResponse = {
-      answer: answer.answer,
-      suggestions: answer.suggestions.slice(0, 5),
-      sources: answer.sourceIds.flatMap((sourceId) => sourceLabels.find((source) => source.id === sourceId) ?? []),
-      needsDoctorDiscussion: answer.needsDoctorDiscussion,
-    }
-
-    return jsonResponse(response, 200, corsHeaders)
+    return jsonResponse(toChatResponse(answer, toSourceLabels(retrievedChunks)), 200, corsHeaders)
   },
+}
+
+function toChatResponse(answer: ChatAnswer, sourceLabels: Array<{ id: string; label: string }>): ChatResponse {
+  return {
+    answer: answer.answer,
+    suggestions: answer.suggestions.slice(0, 5),
+    sources: answer.sourceIds.flatMap((sourceId) => sourceLabels.find((source) => source.id === sourceId) ?? []),
+    needsDoctorDiscussion: answer.needsDoctorDiscussion,
+  }
 }
 
 export function buildCorsHeaders(origin: string | null, allowedOrigins = ''): HeadersInit {

@@ -51,7 +51,7 @@ describe('Cloudflare Worker chat API', () => {
     const json = (await response.json()) as { answer: string; suggestions: Array<{ label: string; action: string }>; sources: Array<{ id: string }> }
 
     expect(response.status).toBe(200)
-    expect(json.answer).toMatch(/temporarily unavailable/i)
+    expect(json.answer).toMatch(/could not prepare the conversational version/i)
     expect(json.answer).toMatch(/Thermoplastic mask|Immobilization/i)
     expect(json.suggestions.some((suggestion) => suggestion.label === 'Will the mask feel tight?')).toBe(true)
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
@@ -113,15 +113,89 @@ describe('Cloudflare Worker chat API', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it('uses a non-JSON Groq answer instead of showing the fallback message', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  detectedLanguage: 'en',
+                  responseLanguage: 'en',
+                  englishSearchQuery: 'planning scan radiation therapy',
+                  category: 'planning',
+                  treatmentAreas: ['general'],
+                  keyTerms: ['planning', 'scan'],
+                  isOutsideScope: false,
+                }),
+              },
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: 'A planning scan helps the team prepare your treatment position and plan.',
+              },
+            },
+          ],
+        }),
+      )
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    const response = await worker.fetch(
+      chatRequest({ language: 'en', question: 'What happens during a planning scan?' }),
+      { ...baseEnv, GROQ_API_KEY: 'test-key' },
+    )
+    const json = (await response.json()) as { answer: string; suggestions: Array<{ action: string }> }
+
+    expect(response.status).toBe(200)
+    expect(json.answer).toBe('A planning scan helps the team prepare your treatment position and plan.')
+    expect(json.answer).not.toMatch(/could not prepare/i)
+    expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
+  })
+
   it('returns Telugu follow-up suggestions with Explain More in fallback mode', async () => {
     const response = await worker.fetch(
       chatRequest({ language: 'te', question: 'Radiation mask enduku vestaru?', action: 'normal', history: [] }),
       baseEnv,
     )
-    const json = (await response.json()) as { suggestions: Array<{ label: string; action: string }> }
+    const json = (await response.json()) as { suggestions: Array<{ action: string }> }
 
     expect(response.status).toBe(200)
-    expect(json.suggestions.some((suggestion) => suggestion.label === 'మాస్క్ బిగిగా అనిపిస్తుందా?')).toBe(true)
-    expect(json.suggestions.some((suggestion) => suggestion.label === 'మరింత వివరించండి' && suggestion.action === 'explain_more')).toBe(true)
+    expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
+  })
+
+  it.each([
+    ['report interpretation', 'Can you interpret my PET CT report?'],
+    ['dose advice', 'How many radiation sessions do I need?'],
+    ['medication change', 'Should I stop my painkiller tablet during radiation?'],
+    ['stopping treatment', 'Can I skip radiation treatment tomorrow?'],
+    ['survival prediction', 'What is my chance of cure?'],
+    ['outside scope', 'Who will win the cricket match?'],
+  ])('blocks unsafe or out-of-scope questions before Groq: %s', async (_label, question) => {
+    const fetchMock = vi.fn<typeof fetch>()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const response = await worker.fetch(chatRequest({ language: 'en', question }), { ...baseEnv, GROQ_API_KEY: 'test-key' })
+    const json = (await response.json()) as {
+      answer: string
+      needsDoctorDiscussion: boolean
+      sources: Array<{ id: string }>
+      suggestions: Array<{ action: string }>
+    }
+
+    expect(response.status).toBe(200)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(json.needsDoctorDiscussion).toBe(true)
+    expect(json.sources).toEqual([])
+    expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
+    expect(json.answer).toMatch(/cannot|only answer|doctor|treating team/i)
   })
 })

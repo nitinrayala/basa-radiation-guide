@@ -26,7 +26,7 @@ describe('App mobile chatbot UI', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Why is a mask used?' }))
 
-    expect(screen.getAllByText('Why is a mask used?').length).toBeGreaterThan(0)
+    expect(screen.getByText('Why is a mask used during radiation?')).toBeInTheDocument()
     expect(await screen.findByText(/mock interface response/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Explain more' })).toBeInTheDocument()
   })

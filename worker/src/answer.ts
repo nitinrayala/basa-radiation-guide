@@ -15,6 +15,19 @@ function extractJsonObject(text: string): string {
   return text.slice(start, end + 1)
 }
 
+function cleanRawAnswer(text: string): string {
+  return text
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/i, '')
+    .trim()
+}
+
+function sleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds)
+  })
+}
+
 function sanitizeSuggestions(value: unknown): ChatAnswer['suggestions'] {
   if (!Array.isArray(value)) return []
 
@@ -39,7 +52,22 @@ function sanitizeSuggestions(value: unknown): ChatAnswer['suggestions'] {
 }
 
 function parseChatAnswer(text: string, request: ChatRequest, interpreted: InterpretedQuestion, chunks: KnowledgeChunk[]): ChatAnswer {
-  const parsed = JSON.parse(extractJsonObject(text)) as Record<string, unknown>
+  let parsed: Record<string, unknown>
+
+  try {
+    parsed = JSON.parse(extractJsonObject(text)) as Record<string, unknown>
+  } catch {
+    const answer = cleanRawAnswer(text)
+    if (!answer) throw new Error('Answer is empty.')
+
+    return {
+      answer,
+      suggestions: buildFollowUpSuggestions(request, interpreted, chunks),
+      sourceIds: chunks.slice(0, 2).map((chunk) => chunk.id),
+      needsDoctorDiscussion: chunks.some((chunk) => chunk.requiresDoctorConfirmation),
+    }
+  }
+
   const answer = typeof parsed.answer === 'string' ? parsed.answer.trim() : ''
   if (!answer) throw new Error('Answer is empty.')
 
@@ -60,6 +88,27 @@ function parseChatAnswer(text: string, request: ChatRequest, interpreted: Interp
   }
 }
 
+async function createAnswerCompletion(
+  apiKey: string,
+  request: ChatRequest,
+  interpreted: InterpretedQuestion,
+  chunks: KnowledgeChunk[],
+  env: Env,
+): Promise<string> {
+  const maxOutputTokens = request.action === 'explain_more' ? env.MAX_OUTPUT_TOKENS_EXPANDED : env.MAX_OUTPUT_TOKENS_NORMAL
+
+  return createGroqChatCompletion(apiKey, {
+    model: env.GROQ_MODEL || 'llama-3.1-8b-instant',
+    messages: [
+      { role: 'system', content: answerSystemPrompt },
+      { role: 'user', content: buildAnswerPrompt(request, interpreted, chunks) },
+    ],
+    temperature: 0.2,
+    max_completion_tokens: Number.parseInt(maxOutputTokens || '', 10) || (request.action === 'explain_more' ? 900 : 500),
+    response_format: { type: 'json_object' },
+  })
+}
+
 export async function generateAnswer(
   request: ChatRequest,
   interpreted: InterpretedQuestion,
@@ -70,17 +119,13 @@ export async function generateAnswer(
     throw new Error('GROQ_API_KEY is not configured.')
   }
 
-  const maxOutputTokens = request.action === 'explain_more' ? env.MAX_OUTPUT_TOKENS_EXPANDED : env.MAX_OUTPUT_TOKENS_NORMAL
-  const text = await createGroqChatCompletion(env.GROQ_API_KEY, {
-    model: env.GROQ_MODEL || 'llama-3.1-8b-instant',
-    messages: [
-      { role: 'system', content: answerSystemPrompt },
-      { role: 'user', content: buildAnswerPrompt(request, interpreted, chunks) },
-    ],
-    temperature: 0.2,
-    max_completion_tokens: Number.parseInt(maxOutputTokens || '', 10) || (request.action === 'explain_more' ? 900 : 500),
-    response_format: { type: 'json_object' },
-  })
+  let text: string
+  try {
+    text = await createAnswerCompletion(env.GROQ_API_KEY, request, interpreted, chunks, env)
+  } catch {
+    await sleep(250)
+    text = await createAnswerCompletion(env.GROQ_API_KEY, request, interpreted, chunks, env)
+  }
 
   return parseChatAnswer(text, request, interpreted, chunks)
 }
