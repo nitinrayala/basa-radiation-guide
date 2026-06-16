@@ -52,7 +52,7 @@ export default {
     try {
       answer = await generateAnswer(chatRequest, interpreted, retrievedChunks, env)
     } catch {
-      answer = buildFallbackAnswer(chatRequest, retrievedChunks, true)
+      answer = buildFallbackAnswer(chatRequest, retrievedChunks, true, interpreted)
     }
 
     const sourceLabels = toSourceLabels(retrievedChunks)

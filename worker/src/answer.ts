@@ -1,5 +1,6 @@
 import { createGroqChatCompletion } from './groq'
 import { answerSystemPrompt, buildAnswerPrompt } from './prompts'
+import { buildFollowUpSuggestions, ensureExplainMoreSuggestion } from './suggestions'
 import type { KnowledgeChunk } from '../../src/features/retrieval/retrievalTypes'
 import type { ChatAnswer, ChatRequest, Env, InterpretedQuestion } from './schemas'
 
@@ -37,7 +38,7 @@ function sanitizeSuggestions(value: unknown): ChatAnswer['suggestions'] {
     })
 }
 
-function parseChatAnswer(text: string, chunks: KnowledgeChunk[]): ChatAnswer {
+function parseChatAnswer(text: string, request: ChatRequest, interpreted: InterpretedQuestion, chunks: KnowledgeChunk[]): ChatAnswer {
   const parsed = JSON.parse(extractJsonObject(text)) as Record<string, unknown>
   const answer = typeof parsed.answer === 'string' ? parsed.answer.trim() : ''
   if (!answer) throw new Error('Answer is empty.')
@@ -46,7 +47,10 @@ function parseChatAnswer(text: string, chunks: KnowledgeChunk[]): ChatAnswer {
   const sourceIds = Array.isArray(parsed.sourceIds)
     ? parsed.sourceIds.filter((id): id is string => typeof id === 'string' && knownIds.has(id))
     : []
-  const suggestions = sanitizeSuggestions(parsed.suggestions)
+  const suggestions = ensureExplainMoreSuggestion(
+    [...sanitizeSuggestions(parsed.suggestions), ...buildFollowUpSuggestions(request, interpreted, chunks)],
+    request.language,
+  )
 
   return {
     answer,
@@ -78,5 +82,5 @@ export async function generateAnswer(
     response_format: { type: 'json_object' },
   })
 
-  return parseChatAnswer(text, chunks)
+  return parseChatAnswer(text, request, interpreted, chunks)
 }

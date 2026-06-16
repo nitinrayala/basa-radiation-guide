@@ -48,11 +48,13 @@ describe('Cloudflare Worker chat API', () => {
 
   it('returns local fallback when Groq is not configured', async () => {
     const response = await worker.fetch(chatRequest({ language: 'en', question: 'Why is a mask used during radiation?' }), baseEnv)
-    const json = (await response.json()) as { answer: string; sources: Array<{ id: string }> }
+    const json = (await response.json()) as { answer: string; suggestions: Array<{ label: string; action: string }>; sources: Array<{ id: string }> }
 
     expect(response.status).toBe(200)
     expect(json.answer).toMatch(/temporarily unavailable/i)
     expect(json.answer).toMatch(/Thermoplastic mask|Immobilization/i)
+    expect(json.suggestions.some((suggestion) => suggestion.label === 'Will the mask feel tight?')).toBe(true)
+    expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
     expect(json.sources.length).toBeGreaterThan(0)
   })
 
@@ -105,8 +107,21 @@ describe('Cloudflare Worker chat API', () => {
 
     expect(response.status).toBe(200)
     expect(json.answer).toBe('A mask helps keep the treatment position consistent.')
-    expect(json.suggestions[0]?.action).toBe('explain_more')
+    expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
+    expect(json.suggestions.length).toBeGreaterThanOrEqual(3)
     expect(json.sources[0]?.id).toBe('planning-radiation-planning-chatbot-radiation-planning-chatbot-001-01')
     expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns Telugu follow-up suggestions with Explain More in fallback mode', async () => {
+    const response = await worker.fetch(
+      chatRequest({ language: 'te', question: 'Radiation mask enduku vestaru?', action: 'normal', history: [] }),
+      baseEnv,
+    )
+    const json = (await response.json()) as { suggestions: Array<{ label: string; action: string }> }
+
+    expect(response.status).toBe(200)
+    expect(json.suggestions.some((suggestion) => suggestion.label === 'మాస్క్ బిగిగా అనిపిస్తుందా?')).toBe(true)
+    expect(json.suggestions.some((suggestion) => suggestion.label === 'మరింత వివరించండి' && suggestion.action === 'explain_more')).toBe(true)
   })
 })

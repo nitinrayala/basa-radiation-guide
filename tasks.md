@@ -48,7 +48,14 @@
   - [x] Corrected Telugu interface strings and initial suggestions.
   - [x] Added request tests for Telugu and mixed Telugu-English questions.
   - [x] Added frontend API error handling without exposing any API keys.
-- [ ] Phase 7: Add suggestions and Explain More
+- [x] Phase 7: Add suggestions and Explain More
+  - [x] Added topic-aware follow-up suggestion generation for planning, workflow, side effects, skin care, oral care, nutrition, rehabilitation and head/neck mask topics.
+  - [x] Ensured every answer path includes an Explain More suggestion.
+  - [x] Updated Explain More prompting to expand previous context instead of repeating the same answer.
+  - [x] Made fallback answers return relevant follow-up suggestions when Groq is unavailable.
+  - [x] Made frontend suggestion clicks use the structured `question` field when present.
+  - [x] Cleaned Telugu mock-mode suggestions and Explain More text.
+  - [x] Added Worker tests for English and Telugu suggestion behavior.
 - [ ] Phase 8: Add fallbacks and safety validation
 - [ ] Phase 9: Add tests
 - [ ] Phase 10: Configure GitHub Pages and Worker deployment

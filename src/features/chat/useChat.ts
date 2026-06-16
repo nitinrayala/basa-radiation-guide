@@ -71,8 +71,8 @@ export function useChat(language: Language) {
 
   const submitSuggestion = useCallback(
     (suggestion: Suggestion) => {
-      const label = suggestion.label
-      void submitQuestion(label, suggestion.action === 'explain_more' ? 'explain_more' : 'normal')
+      const question = suggestion.action === 'explain_more' ? suggestion.label : suggestion.question || suggestion.label
+      void submitQuestion(question, suggestion.action === 'explain_more' ? 'explain_more' : 'normal')
     },
     [submitQuestion],
   )

@@ -1,5 +1,6 @@
 import type { KnowledgeChunk } from '../../src/features/retrieval/retrievalTypes'
-import type { ChatAnswer, ChatRequest } from './schemas'
+import type { ChatAnswer, ChatRequest, InterpretedQuestion } from './schemas'
+import { buildFollowUpSuggestions } from './suggestions'
 
 const unavailable = {
   en: 'The conversational explanation is temporarily unavailable. Here is the most relevant information from the available documents.',
@@ -8,10 +9,27 @@ const unavailable = {
 
 const missing = {
   en: 'This information is not clearly covered in the available material and may depend on your individual treatment plan. Please discuss it with your treating doctor.',
-  te: 'ఈ సమాచారం అందుబాటులో ఉన్న పత్రాలలో స్పష్టంగా లేదు మరియు మీ వ్యక్తిగత చికిత్స ప్రణాళికపై ఆధారపడి ఉండవచ్చు. దయచేసి మీ చికిత్స చేస్తున్న వైద్యుడితో చర్చించండి.',
+  te: 'ఈ సమాచారం అందుబాటులో ఉన్న పత్రాలలో స్పష్టంగా లేదు మరియు మీ వ్యక్తిగత చికిత్స ప్రణాళికపై ఆధారపడి ఉండవచ్చు. దయచేసి మీ చికిత్స చేసే డాక్టర్‌తో చర్చించండి.',
 }
 
-export function buildFallbackAnswer(request: ChatRequest, chunks: KnowledgeChunk[], conversationalFailure: boolean): ChatAnswer {
+function defaultInterpreted(request: ChatRequest): InterpretedQuestion {
+  return {
+    detectedLanguage: request.language,
+    responseLanguage: request.language,
+    englishSearchQuery: request.question,
+    category: 'unknown',
+    treatmentAreas: ['general'],
+    keyTerms: [],
+    isOutsideScope: false,
+  }
+}
+
+export function buildFallbackAnswer(
+  request: ChatRequest,
+  chunks: KnowledgeChunk[],
+  conversationalFailure: boolean,
+  interpreted: InterpretedQuestion = defaultInterpreted(request),
+): ChatAnswer {
   const usefulChunks = chunks.filter((chunk) => chunk.content.trim().length > 0).slice(0, request.action === 'explain_more' ? 4 : 2)
   const sourceIds = usefulChunks.map((chunk) => chunk.id)
   const intro = conversationalFailure ? unavailable[request.language] : missing[request.language]
@@ -19,25 +37,7 @@ export function buildFallbackAnswer(request: ChatRequest, chunks: KnowledgeChunk
 
   return {
     answer: body ? `${intro}\n\n${body}` : intro,
-    suggestions: [
-      {
-        id: 'ask-planning',
-        label: request.language === 'te' ? 'ప్లానింగ్ సమయంలో ఏమి జరుగుతుంది?' : 'What happens during planning?',
-        action: 'question',
-        question: request.language === 'te' ? 'ప్లానింగ్ సమయంలో ఏమి జరుగుతుంది?' : 'What happens during planning?',
-      },
-      {
-        id: 'ask-side-effects',
-        label: request.language === 'te' ? 'ఏ దుష్ప్రభావాలు రావచ్చు?' : 'What side effects can occur?',
-        action: 'question',
-        question: request.language === 'te' ? 'ఏ దుష్ప్రభావాలు రావచ్చు?' : 'What side effects can occur?',
-      },
-      {
-        id: 'explain-more',
-        label: request.language === 'te' ? 'మరింత వివరించండి' : 'Explain more',
-        action: 'explain_more',
-      },
-    ],
+    suggestions: buildFollowUpSuggestions(request, interpreted, usefulChunks),
     sourceIds,
     needsDoctorDiscussion: !body,
   }

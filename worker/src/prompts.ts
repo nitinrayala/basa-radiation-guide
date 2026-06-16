@@ -73,5 +73,14 @@ ${history || 'None'}
 APPROVED DOCUMENT CONTENT:
 ${approvedContent.join('\n\n')}
 
-Write a patient-friendly answer using only the approved document content. Include three to five follow-up suggestions, one of which should be Explain more.`
+Write a patient-friendly answer using only the approved document content.
+
+Suggestion rules:
+- Include three to five follow-up suggestions.
+- Suggestions must be specific to the patient question, retrieved content and recent conversation.
+- Always include one suggestion with action "explain_more".
+- For normal question suggestions, include a complete "question" field.
+- Suggestions must use the requested response language.
+
+If Action is "explain_more", use the recent conversation to expand the previous answer with more detail from the approved content. Do not merely repeat the same answer.`
 }
