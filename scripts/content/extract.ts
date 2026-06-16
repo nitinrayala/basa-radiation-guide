@@ -14,12 +14,16 @@ const parser = new XMLParser({
   trimValues: true,
 })
 
-function normalizeWhitespace(value: string): string {
-  return value.replace(/\s+/g, ' ').trim()
+function normalizeLine(value: string): string {
+  return value.replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ').trim()
+}
+
+function normalizeBlock(lines: string[]): string {
+  return lines.map((line) => normalizeLine(line)).filter(Boolean).join('\n')
 }
 
 function wordCount(value: string): number {
-  const normalized = normalizeWhitespace(value)
+  const normalized = normalizeLine(value)
 
   return normalized.length === 0 ? 0 : normalized.split(' ').length
 }
@@ -62,6 +66,50 @@ function makeSectionId(sourceFile: string, location: string, order: number): str
   return `${slugify(sourceFile.replace(extname(sourceFile), ''))}-${slugify(location)}-${order.toString().padStart(3, '0')}`
 }
 
+const knownDocxHeadings = [
+  /^abdomen\b/i,
+  /^advantages\b/i,
+  /^bone tumors\b/i,
+  /^brain\b/i,
+  /^breast radiation\b/i,
+  /^cervix\b/i,
+  /^common side effects\b/i,
+  /^conclusion\b/i,
+  /^contouring\b/i,
+  /^during radiation\b/i,
+  /^general care\b/i,
+  /^head and neck\b/i,
+  /^how .* works\b/i,
+  /^in summary\b/i,
+  /^liver cancer\b/i,
+  /^no soap\b/i,
+  /^patient notification\b/i,
+  /^pelvis radiation\b/i,
+  /^planning duration\b/i,
+  /^prostate\b/i,
+  /^radiation planning\b/i,
+  /^radiation technique\b/i,
+  /^radiation therapy workflow\b/i,
+  /^radiation therapy techniques\b/i,
+  /^rare complications\b/i,
+  /^rectal & anal irritation/i,
+  /^side effects\b/i,
+  /^summary\b/i,
+  /^thorax\b/i,
+  /^treatment planning\b/i,
+  /^types of radiation therapy\b/i,
+  /^uses\b/i,
+  /^\d+\.\s/,
+]
+
+function isLikelyDocxHeading(line: string): boolean {
+  if (line.length > 120 || /[.!?]$/.test(line)) return false
+  if (knownDocxHeadings.some((pattern) => pattern.test(line))) return true
+  if (/^[A-Z][A-Za-z /&()+-]+(?:Radiation|Therapy|Tumors|Cancer|Effects|Instructions|Workflow|Course)\b/.test(line)) return true
+
+  return false
+}
+
 function groupDocxParagraphs(paragraphs: string[], sourceFile: string): ExtractedSection[] {
   const sections: ExtractedSection[] = []
   let currentTitle = sourceFile.replace(extname(sourceFile), '')
@@ -70,7 +118,7 @@ function groupDocxParagraphs(paragraphs: string[], sourceFile: string): Extracte
   const priority = getSourcePriority(sourceFile)
 
   function flush() {
-    const text = normalizeWhitespace(buffer.join('\n'))
+    const text = normalizeBlock(buffer)
     if (text.length === 0) return
 
     order += 1
@@ -89,19 +137,24 @@ function groupDocxParagraphs(paragraphs: string[], sourceFile: string): Extracte
   }
 
   for (const paragraph of paragraphs) {
-    const line = normalizeWhitespace(paragraph)
+    const line = normalizeLine(paragraph)
     if (line.length === 0) continue
 
-    const likelyHeading = line.length <= 90 && !/[.!?]$/.test(line)
+    const likelyHeading = isLikelyDocxHeading(line)
     const bufferWords = wordCount(buffer.join(' '))
-    if (likelyHeading && bufferWords >= 80) {
+    if (likelyHeading && buffer.length > 0) {
       flush()
       currentTitle = line
       continue
     }
 
+    if (likelyHeading && buffer.length === 0) {
+      currentTitle = line
+      continue
+    }
+
     buffer.push(line)
-    if (wordCount(buffer.join(' ')) >= 420) flush()
+    if (bufferWords >= 300 || wordCount(buffer.join(' ')) >= 380) flush()
   }
 
   flush()
@@ -114,7 +167,7 @@ async function extractDocx(sourceFile: string): Promise<ExtractedDocument> {
   const result = await mammoth.extractRawText({ path: filePath })
   const paragraphs = result.value
     .split(/\r?\n/)
-    .map((line) => normalizeWhitespace(line))
+    .map((line) => normalizeLine(line))
     .filter(Boolean)
   const sections = groupDocxParagraphs(paragraphs, sourceFile)
 
@@ -149,9 +202,9 @@ async function extractPptx(sourceFile: string): Promise<ExtractedDocument> {
     const xml = await zip.files[slidePath].async('text')
     const parsed = parser.parse(xml) as unknown
     const textParts = collectTextByKey(parsed, 'a:t')
-      .map((value) => normalizeWhitespace(value))
+      .map((value) => normalizeLine(value))
       .filter(Boolean)
-    const text = normalizeWhitespace(textParts.join('\n'))
+    const text = normalizeBlock(textParts)
 
     if (text.length === 0) continue
 

@@ -42,7 +42,12 @@ const sideEffectSuggestions: Record<Language, Suggestion[]> = {
   ],
   te: [
     { id: 'side-effects-begin-te', label: 'దుష్ప్రభావాలు ఎప్పుడు మొదలవుతాయి?', action: 'question', question: 'రేడియేషన్ దుష్ప్రభావాలు సాధారణంగా ఎప్పుడు మొదలవుతాయి?' },
-    { id: 'side-effects-after-te', label: 'చికిత్స తర్వాత కూడా దుష్ప్రభావాలు ఉంటాయా?', action: 'question', question: 'రేడియేషన్ చికిత్స తర్వాత కూడా దుష్ప్రభావాలు కొనసాగవచ్చా?' },
+    {
+      id: 'side-effects-after-te',
+      label: 'చికిత్స తర్వాత కూడా దుష్ప్రభావాలు ఉంటాయా?',
+      action: 'question',
+      question: 'రేడియేషన్ చికిత్స తర్వాత కూడా దుష్ప్రభావాలు కొనసాగవచ్చా?',
+    },
     { id: 'precautions-te', label: 'ఏ జాగ్రత్తలు చెప్పబడ్డాయి?', action: 'question', question: 'రేడియేషన్ పత్రాలలో ఏ జాగ్రత్తలు చెప్పబడ్డాయి?' },
   ],
 }
@@ -76,7 +81,14 @@ const expandedAnswers: Record<Language, string> = {
 
 function mockSuggestions(request: ChatRequest): Suggestion[] {
   const question = request.question.toLowerCase()
-  const suggestions = question.includes('mask') || question.includes('మాస్క్') ? maskSuggestions : question.includes('side effect') || question.includes('దుష్ప్రభావ') ? sideEffectSuggestions : question.includes('planning') || question.includes('scan') || question.includes('ప్లానింగ్') ? planningSuggestions : generalSuggestions
+  const suggestions =
+    question.includes('mask') || question.includes('మాస్క్')
+      ? maskSuggestions
+      : question.includes('side effect') || question.includes('దుష్ప్రభావ')
+        ? sideEffectSuggestions
+        : question.includes('planning') || question.includes('scan') || question.includes('ప్లానింగ్')
+          ? planningSuggestions
+          : generalSuggestions
 
   return [...suggestions[request.language], explainMoreSuggestion[request.language]]
 }

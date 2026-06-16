@@ -88,7 +88,7 @@ describe('Cloudflare Worker chat API', () => {
                 content: JSON.stringify({
                   answer: 'A mask helps keep the treatment position consistent.',
                   suggestions: [{ id: 'explain-more', label: 'Explain more', action: 'explain_more' }],
-                  sourceIds: ['planning-radiation-planning-chatbot-radiation-planning-chatbot-001-01'],
+                  sourceIds: ['planning-2-immobilization-radiation-planning-chatbot-005-01'],
                   needsDoctorDiscussion: false,
                 }),
               },
@@ -109,7 +109,7 @@ describe('Cloudflare Worker chat API', () => {
     expect(json.answer).toBe('A mask helps keep the treatment position consistent.')
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
     expect(json.suggestions.length).toBeGreaterThanOrEqual(3)
-    expect(json.sources[0]?.id).toBe('planning-radiation-planning-chatbot-radiation-planning-chatbot-001-01')
+    expect(json.sources[0]?.id).toBe('planning-2-immobilization-radiation-planning-chatbot-005-01')
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 

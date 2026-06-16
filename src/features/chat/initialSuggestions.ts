@@ -9,7 +9,12 @@ export const initialSuggestions: Record<Language, Suggestion[]> = {
   ],
   te: [
     { id: 'what-is-rt-te', label: 'రేడియేషన్ థెరపీ అంటే ఏమిటి?', action: 'question', question: 'రేడియేషన్ థెరపీ అంటే ఏమిటి?' },
-    { id: 'planning-scan-te', label: 'ప్లానింగ్ స్కాన్ సమయంలో ఏమి జరుగుతుంది?', action: 'question', question: 'ప్లానింగ్ స్కాన్ సమయంలో ఏమి జరుగుతుంది?' },
+    {
+      id: 'planning-scan-te',
+      label: 'ప్లానింగ్ స్కాన్ సమయంలో ఏమి జరుగుతుంది?',
+      action: 'question',
+      question: 'ప్లానింగ్ స్కాన్ సమయంలో ఏమి జరుగుతుంది?',
+    },
     { id: 'pain-te', label: 'రేడియేషన్ సమయంలో నొప్పి ఉంటుందా?', action: 'question', question: 'రేడియేషన్ సమయంలో నొప్పి ఉంటుందా?' },
     { id: 'mask-te', label: 'రేడియేషన్ మాస్క్ ఎందుకు ఉపయోగిస్తారు?', action: 'question', question: 'రేడియేషన్ మాస్క్ ఎందుకు ఉపయోగిస్తారు?' },
   ],

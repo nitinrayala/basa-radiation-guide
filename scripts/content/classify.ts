@@ -16,7 +16,7 @@ export function classifyCategory(sourceFile: string, text: string): Category {
   const normalized = `${sourceFile} ${text}`.toLowerCase()
 
   if (/\b(imrt|vmat|3dcrt|sbrt|srs|brachytherapy|technique|linear accelerator|linac)\b/.test(normalized)) return 'technique'
-  if (/\b(side effect|mucositis|fatigue|dry mouth|skin reaction|sore throat|nausea|vomiting|diarrhea|burning)\b/.test(normalized)) return 'side_effect'
+  if (/\b(side effects?|mucositis|fatigue|dry mouth|skin reaction|sore throat|nausea|vomiting|diarrhea|burning)\b/.test(normalized)) return 'side_effect'
   if (/\b(mask|ct simulation|simulation|planning|immobili[sz]ation|scan|contrast|marking|tattoo|treatment plan)\b/.test(normalized)) return 'planning'
   if (/\b(workflow|registration|appointment|quality assurance|qa|treatment start|schedule|fraction)\b/.test(normalized)) return 'workflow'
   if (/\b(exercise|rehabilitation|physiotherapy|movement|shoulder|neck exercise|swallowing exercise)\b/.test(normalized)) return 'rehabilitation'

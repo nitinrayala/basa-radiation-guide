@@ -9,6 +9,10 @@ const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const categorySet = new Set<string>(categories)
 const treatmentAreaSet = new Set<string>(treatmentAreas)
 const expectedSourceSet = new Set<string>(expectedSourceDocuments)
+const badEncodingPattern = /[\u00c3\u00c2\ufffd]|\u00e0\u00b0|\u00e0\u00b1/u
+const decorativeArtifactPattern = /[\u{1f3ac}\u2705]|\bText overlay:|\bText on screen:|\bOptional Voiceover:|\bImage:|\bScene \d+/iu
+const contactArtifactPattern = /\bAny queries call\b|\bDr\.\s|Sr\. Consultant|Dept\. of Radiation Oncology|Patient Name:|MR Number:/i
+const teluguPattern = /[\u0c00-\u0c7f]/u
 
 async function validateSourceDocuments() {
   await access(sourceDir)
@@ -96,6 +100,23 @@ function validateKnowledgeChunks(chunks: KnowledgeChunk[], corpus: ExtractedCorp
 
     if (!chunk.title.trim() || !chunk.content.trim()) {
       throw new Error(`Chunk ${chunk.id} is missing title or content.`)
+    }
+
+    const searchableText = `${chunk.title}\n${chunk.content}`
+    if (badEncodingPattern.test(searchableText)) {
+      throw new Error(`Chunk ${chunk.id} contains corrupted text encoding artifacts.`)
+    }
+
+    if (decorativeArtifactPattern.test(searchableText)) {
+      throw new Error(`Chunk ${chunk.id} contains decorative storyboard artifacts.`)
+    }
+
+    if (contactArtifactPattern.test(searchableText)) {
+      throw new Error(`Chunk ${chunk.id} contains contact or patient-identifying template text.`)
+    }
+
+    if (teluguPattern.test(searchableText)) {
+      throw new Error(`Chunk ${chunk.id} contains mixed Telugu text. Telugu answers should be generated from clean source context.`)
     }
 
     if (!expectedSourceSet.has(chunk.sourceFile)) {

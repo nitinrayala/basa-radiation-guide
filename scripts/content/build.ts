@@ -9,12 +9,20 @@ import {
 import { extractedCorpusPath, frontendKnowledgeChunksPath, knowledgeChunksPath } from './paths'
 import type { ExtractedCorpus, ExtractedSection, KnowledgeChunk } from './schema'
 
-function normalizeWhitespace(value: string): string {
-  return value.replace(/\s+/g, ' ').trim()
+function normalizeLine(value: string): string {
+  return value
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .trim()
+}
+
+function normalizeBlock(lines: string[]): string {
+  return lines.map((line) => normalizeLine(line)).filter(Boolean).join('\n')
 }
 
 function wordCount(value: string): number {
-  const normalized = normalizeWhitespace(value)
+  const normalized = normalizeLine(value)
 
   return normalized.length === 0 ? 0 : normalized.split(' ').length
 }
@@ -29,10 +37,78 @@ function slugify(value: string): string {
   return slug.length > 0 ? slug : 'untitled'
 }
 
-function splitIntoParagraphChunks(text: string): string[] {
-  const paragraphs = text
+function containsTelugu(value: string): boolean {
+  return /[\u0c00-\u0c7f]/u.test(value)
+}
+
+function containsLatin(value: string): boolean {
+  return /[a-z]/i.test(value)
+}
+
+function stripTeluguFromMixedLine(line: string): string {
+  if (!containsTelugu(line)) return line
+  if (!containsLatin(line)) return ''
+
+  return line
+    .replace(/[\u0c00-\u0c7f\u200c\u200d\s]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function isNoiseLine(line: string): boolean {
+  return (
+    /^patient name:?$/i.test(line) ||
+    /^mr number:?$/i.test(line) ||
+    /^any queries call\b/i.test(line) ||
+    /^dr\./i.test(line) ||
+    /^sr\.?\s*consultant\b/i.test(line) ||
+    /^dept\.?\s+of\b/i.test(line) ||
+    /^image:/i.test(line) ||
+    /^narration/i.test(line) ||
+    /^optional voiceover/i.test(line) ||
+    /^text (?:on screen|overlay):/i.test(line) ||
+    /^scene\s+\d+/i.test(line) ||
+    /^it seems you(?:'|’)re outlining\b/i.test(line) ||
+    /^here(?:'|’)s a more detailed breakdown\b/i.test(line)
+  )
+}
+
+function cleanLine(line: string): string {
+  const withoutEmoji = line
+    .replace(/[🎬✅]/gu, '')
+    .replace(/[0-9]\ufe0f?\u20e3/gu, '')
+    .replace(/\ufe0f/gu, '')
+  const withoutTeluguDuplicates = stripTeluguFromMixedLine(withoutEmoji)
+  const normalized = normalizeLine(withoutTeluguDuplicates)
+    .replace(/\bCounselled and discussed regarding outcomes, precautions and side effects with EBRT\.?\s*/gi, '')
+    .replace(/\bPlanned for (?:local|Radical\/Adjuvant) radiotherapy\.?\s*/gi, '')
+    .replace(/\bExplained about side effects in detail including\s+(.+?)\s+with Local radiotherapy\.?/i, 'Possible side effects mentioned: $1.')
+    .replace(/\bAgreed to proceed with treatment\.?/gi, '')
+    .replace(/\bDiscussed role of SRS vs WBRT.+$/i, '')
+    .replace(/\bDecided to go ahead with SRS.+$/i, '')
+    .replace(/^NOTE-$/i, '')
+    .replace(/^Kindly co-operative and thank you very much for understanding\.?$/i, '')
+    .replace(/^COUNSELLED REGARDING NECK\/MOUTH\/SHOULDER EXERCISES AND REHABILIATION\.?/i, 'Neck, mouth and shoulder exercises/rehabilitation were discussed.')
+    .replace(/^\.\s*/, '')
+    .replace(/\.([A-Z])/g, '. $1')
+    .trim()
+
+  return isNoiseLine(normalized) ? '' : normalized
+}
+
+function cleanSectionText(text: string): string {
+  const lines = text
     .split(/\n+/)
-    .map((paragraph) => normalizeWhitespace(paragraph))
+    .map(cleanLine)
+    .filter(Boolean)
+
+  return normalizeBlock(lines)
+}
+
+function splitIntoParagraphChunks(text: string): string[] {
+  const paragraphs = cleanSectionText(text)
+    .split(/\n+/)
+    .map((paragraph) => normalizeLine(paragraph))
     .filter(Boolean)
 
   if (paragraphs.length === 0) return []
@@ -41,7 +117,7 @@ function splitIntoParagraphChunks(text: string): string[] {
   let buffer: string[] = []
 
   function flush() {
-    const chunk = normalizeWhitespace(buffer.join('\n'))
+    const chunk = normalizeBlock(buffer)
     if (chunk.length > 0) chunks.push(chunk)
     buffer = []
   }
@@ -85,11 +161,12 @@ function chunkSection(section: ExtractedSection): KnowledgeChunk[] {
   const chunks = splitIntoParagraphChunks(section.text)
 
   return chunks.map((content, chunkIndex) => {
-    const fullText = `${section.title}\n${content}`
+    const title = cleanLine(section.title) || section.title
+    const fullText = `${title}\n${content}`
 
     return {
       id: buildChunkId(section, chunkIndex),
-      title: section.title,
+      title,
       content,
       category: classifyCategory(section.sourceFile, fullText),
       treatmentAreas: classifyTreatmentAreas(section.sourceFile, fullText),

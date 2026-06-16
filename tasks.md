@@ -25,6 +25,10 @@
   - [x] Split extracted text into structured knowledge chunks.
   - [x] Added validation for chunk IDs, sources, categories, treatment areas, priorities and safety flags.
   - [x] Generated `data/content/extracted-corpus.json`, `data/content/knowledge-chunks.json` and `src/data/knowledgeChunks.json`.
+  - [x] Rebuilt extraction to preserve document line structure instead of flattening content into long paragraphs.
+  - [x] Cleaned generated chunks to remove duplicated counselling boilerplate, contact/template text, decorative storyboard text, emoji artifacts and mixed Telugu/English duplicated lines.
+  - [x] Added validation failures for mojibake, decorative artifacts, contact text and mixed Telugu text in generated chunks.
+  - [x] Regenerated 126 smaller structured knowledge chunks.
 - [x] Phase 4: Implement retrieval
   - [x] Added a local retrieval engine over generated knowledge chunks.
   - [x] Added English, Telugu-script, Romanised Telugu and mixed Telugu-English query normalization.
@@ -46,6 +50,7 @@
   - [x] Passed selected English/Telugu language, question, action and history to the API.
   - [x] Preserved test/mock mode for local UI tests and demos without the Worker.
   - [x] Corrected Telugu interface strings and initial suggestions.
+  - [x] Repaired remaining mojibake Telugu UI/mock strings in the frontend.
   - [x] Added request tests for Telugu and mixed Telugu-English questions.
   - [x] Added frontend API error handling without exposing any API keys.
 - [x] Phase 7: Add suggestions and Explain More
