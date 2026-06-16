@@ -2,7 +2,7 @@ import worker from './index'
 import type { Env } from './schemas'
 
 const baseEnv: Env = {
-  ALLOWED_ORIGIN: 'http://localhost:5173',
+  ALLOWED_ORIGINS: 'https://nitinrayala.github.io,http://localhost:5173',
   GROQ_MODEL: 'llama-3.1-8b-instant',
   MAX_HISTORY_MESSAGES: '6',
   MAX_OUTPUT_TOKENS_NORMAL: '500',
@@ -37,13 +37,13 @@ describe('Cloudflare Worker chat API', () => {
     const response = await worker.fetch(
       new Request('https://example.test/api/chat', {
         method: 'OPTIONS',
-        headers: { origin: 'http://localhost:5173' },
+        headers: { origin: 'https://nitinrayala.github.io' },
       }),
       baseEnv,
     )
 
     expect(response.status).toBe(204)
-    expect(response.headers.get('access-control-allow-origin')).toBe('http://localhost:5173')
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://nitinrayala.github.io')
   })
 
   it('returns local fallback when Groq is not configured', async () => {

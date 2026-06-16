@@ -15,7 +15,7 @@ function jsonResponse(body: unknown, status: number, corsHeaders: HeadersInit): 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get('origin')
-    const corsHeaders = buildCorsHeaders(origin, env.ALLOWED_ORIGIN)
+    const corsHeaders = buildCorsHeaders(origin, env.ALLOWED_ORIGINS ?? env.ALLOWED_ORIGIN)
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders })
@@ -67,14 +67,22 @@ export default {
   },
 }
 
-export function buildCorsHeaders(origin: string | null, allowedOrigin = ''): HeadersInit {
+export function buildCorsHeaders(origin: string | null, allowedOrigins = ''): HeadersInit {
   const headers: Record<string, string> = {
     'access-control-allow-methods': 'POST, OPTIONS',
     'access-control-allow-headers': 'content-type',
     'vary': 'Origin',
   }
 
-  if (origin && (origin === allowedOrigin || origin === 'http://localhost:5173')) {
+  const localDevelopmentOrigins = new Set(['http://localhost:5173', 'http://127.0.0.1:5173'])
+  const configuredOrigins = new Set(
+    allowedOrigins
+      .split(',')
+      .map((configuredOrigin) => configuredOrigin.trim())
+      .filter(Boolean),
+  )
+
+  if (origin && (configuredOrigins.has(origin) || localDevelopmentOrigins.has(origin))) {
     headers['access-control-allow-origin'] = origin
   }
 

@@ -5,6 +5,7 @@ export interface Env {
   GROQ_API_KEY?: string
   GROQ_MODEL?: string
   ALLOWED_ORIGIN?: string
+  ALLOWED_ORIGINS?: string
   MAX_OUTPUT_TOKENS_NORMAL?: string
   MAX_OUTPUT_TOKENS_EXPANDED?: string
   MAX_HISTORY_MESSAGES?: string
