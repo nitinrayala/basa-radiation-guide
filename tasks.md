@@ -1,0 +1,55 @@
+# Implementation Tasks
+
+- [x] Phase 1: Inspect repository and establish project foundation
+  - [x] Read `AGENTS.md`, `PROJECT_SPEC.md`, and `TASKS.md`.
+  - [x] Inspected repository state and identified the deleted prior React app in Git history.
+  - [x] Inspected all expected files in `source-docs/` and confirmed they are present.
+  - [x] Preserved the useful React/Vite/TypeScript direction while removing incompatible multi-page/onboarding/contact/profile patterns.
+  - [x] Recreated a strict TypeScript Vite frontend foundation for a single-page mobile chatbot.
+  - [x] Established frontend, content-processing, and Cloudflare Worker folders.
+  - [x] Added environment example files and required npm scripts.
+- [x] Phase 2: Build mobile-first chatbot UI
+  - [x] Built a light, bright, phone-first single-page chat layout.
+  - [x] Added English/Telugu header toggle and clear-chat control.
+  - [x] Added scrollable message area with initial greeting.
+  - [x] Added four initial suggested questions.
+  - [x] Kept suggestions directly above the sticky bottom input.
+  - [x] Enabled typed questions, suggestion clicks, mock responses and updated suggestions.
+  - [x] Rendered Explain more as a suggested follow-up button.
+  - [x] Added responsive UI tests for 320px, 375px and 430px widths.
+- [x] Phase 3: Extract and structure source documents
+  - [x] Inspected all DOCX and PPTX files in `source-docs/`.
+  - [x] Added repeatable DOCX/PPTX extraction scripts.
+  - [x] Extracted DOCX text with source metadata and priority.
+  - [x] Inspected PPTX slides in slide order; supplied PPTX files contain no extractable slide text.
+  - [x] Split extracted text into structured knowledge chunks.
+  - [x] Added validation for chunk IDs, sources, categories, treatment areas, priorities and safety flags.
+  - [x] Generated `data/content/extracted-corpus.json`, `data/content/knowledge-chunks.json` and `src/data/knowledgeChunks.json`.
+- [x] Phase 4: Implement retrieval
+  - [x] Added a local retrieval engine over generated knowledge chunks.
+  - [x] Added English, Telugu-script, Romanised Telugu and mixed Telugu-English query normalization.
+  - [x] Added alias expansion for common radiation, care and Romanised Telugu terms.
+  - [x] Added exact phrase, token, fuzzy, title, category, treatment-area and source-priority scoring.
+  - [x] Added source-priority fallback results for empty lexical matches.
+  - [x] Added focused retrieval tests for English, Telugu, Romanised Telugu, mixed-language, metadata boosts, fuzzy matching and fallback.
+- [x] Phase 5: Build Cloudflare Worker and Groq integration
+  - [x] Implemented `POST /api/chat` in the Cloudflare Worker.
+  - [x] Added request validation, CORS handling and JSON responses.
+  - [x] Added Groq REST integration using the server-side `GROQ_API_KEY` secret.
+  - [x] Added compact question interpretation and document-grounded answer generation calls.
+  - [x] Reused local retrieval so Groq receives only relevant approved chunks.
+  - [x] Added safe fallback behavior when Groq is not configured or unavailable.
+  - [x] Added Worker tests with mocked Groq responses.
+  - [x] Verified Worker bundling with `wrangler deploy --dry-run`.
+- [x] Phase 6: Add English/Telugu and mixed-language handling
+  - [x] Wired the frontend chat client to call the configured Cloudflare Worker.
+  - [x] Passed selected English/Telugu language, question, action and history to the API.
+  - [x] Preserved test/mock mode for local UI tests and demos without the Worker.
+  - [x] Corrected Telugu interface strings and initial suggestions.
+  - [x] Added request tests for Telugu and mixed Telugu-English questions.
+  - [x] Added frontend API error handling without exposing any API keys.
+- [ ] Phase 7: Add suggestions and Explain More
+- [ ] Phase 8: Add fallbacks and safety validation
+- [ ] Phase 9: Add tests
+- [ ] Phase 10: Configure GitHub Pages and Worker deployment
+- [ ] Phase 11: Final validation and documentation
