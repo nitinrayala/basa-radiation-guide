@@ -20,13 +20,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Install dependencies
         run: npm ci
@@ -34,8 +37,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Show build output
+        run: find dist -maxdepth 3 -type f -print
+
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
@@ -48,4 +54,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
