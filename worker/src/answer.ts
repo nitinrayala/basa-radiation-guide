@@ -76,7 +76,7 @@ function parseChatAnswer(text: string, request: ChatRequest, interpreted: Interp
     ? parsed.sourceIds.filter((id): id is string => typeof id === 'string' && knownIds.has(id))
     : []
   const suggestions = ensureExplainMoreSuggestion(
-    [...sanitizeSuggestions(parsed.suggestions), ...buildFollowUpSuggestions(request, interpreted, chunks)],
+    [...buildFollowUpSuggestions(request, interpreted, chunks), ...sanitizeSuggestions(parsed.suggestions)],
     request.language,
   )
 

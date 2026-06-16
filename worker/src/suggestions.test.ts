@@ -31,12 +31,15 @@ const interpreted: InterpretedQuestion = {
   isOutsideScope: false,
 }
 
+const explainMoreTe = '\u0c2e\u0c30\u0c3f\u0c02\u0c24 \u0c35\u0c3f\u0c35\u0c30\u0c3f\u0c02\u0c1a\u0c02\u0c21\u0c3f'
+
 describe('follow-up suggestions', () => {
   it('creates topic-specific mask suggestions and Explain More', () => {
     const suggestions = buildFollowUpSuggestions(baseRequest, interpreted, [maskChunk])
 
     expect(suggestions).toHaveLength(5)
     expect(suggestions.map((suggestion) => suggestion.label)).toContain('Will the mask feel tight?')
+    expect(suggestions.map((suggestion) => suggestion.label)).toContain('What if I cough or move?')
     expect(suggestions.at(-1)).toMatchObject({ label: 'Explain more', action: 'explain_more' })
   })
 
@@ -52,7 +55,7 @@ describe('follow-up suggestions', () => {
 
     expect(suggestions).toEqual([
       { id: 'a', label: 'What happens during planning?', action: 'question', question: undefined },
-      { id: 'explain-more-te', label: 'మరింత వివరించండి', action: 'explain_more' },
+      { id: 'explain-more-te', label: explainMoreTe, action: 'explain_more' },
     ])
   })
 })

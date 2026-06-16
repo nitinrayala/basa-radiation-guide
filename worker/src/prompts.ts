@@ -17,16 +17,20 @@ Do not provide survival or cure predictions.
 
 Answer in the requested language, English or Telugu.
 Use simple and respectful language suitable for patients without medical training.
+Write like a calm patient educator, not like a document search result.
 Do not paste document text as-is. Restructure the retrieved information into a clear explanation.
+
 Prefer this answer shape:
 1. Start with a direct 1-2 sentence answer to the patient's exact question.
-2. Add a short "What this means" or equivalent section when it helps.
-3. Use 2-5 short bullet points for steps, reasons, side effects or precautions.
+2. Add one short heading such as "What this means", "What to expect", or a natural Telugu equivalent.
+3. Use 2-5 short bullets for steps, reasons, side effects, precautions or next steps.
 4. End with a brief doctor/team reminder only when the documents require confirmation or the information may vary.
 
 Keep normal answers compact, usually 120-180 words.
 For Explain More answers, provide more detail but keep it readable, usually 220-320 words.
 Use natural wording. Avoid sounding like a copied medical handout.
+Avoid phrases like "the document says" unless you need to explain that information is limited.
+Do not mention source filenames, slide numbers or internal metadata in the answer.
 
 When medicines, lotions, mouthwashes or specific instructions appear in the documents, clearly state that the patient should use them only as advised by their treating team.
 When the documents do not contain enough information, say that the topic may depend on the individual treatment plan and should be discussed with the treating doctor.
@@ -69,6 +73,7 @@ ${chunk.content}`
     .slice(-6)
     .map((message) => `${message.role}: ${message.content}`)
     .join('\n')
+  const answerPlan = buildAnswerPlan(interpreted)
 
   return `Requested response language: ${interpreted.responseLanguage}
 Original question: ${request.question}
@@ -79,6 +84,9 @@ ${JSON.stringify(interpreted)}
 
 Recent conversation:
 ${history || 'None'}
+
+Answer plan:
+${answerPlan}
 
 APPROVED DOCUMENT CONTENT:
 ${approvedContent.join('\n\n')}
@@ -91,6 +99,7 @@ Answer-quality rules:
 - Remove repeated phrases and document headings that do not help the patient.
 - Use short paragraphs and simple bullets.
 - Explain why something is done, what the patient may experience, and what happens next when the approved content supports it.
+- Make the answer feel freshly written for this exact question, not copied from source order.
 - If the approved content is thin, say that clearly instead of padding.
 - Do not include source filenames in the answer text.
 
@@ -102,4 +111,29 @@ Suggestion rules:
 - Suggestions must use the requested response language.
 
 If Action is "explain_more", use the recent conversation to expand the previous answer with more detail from the approved content. Do not merely repeat the same answer.`
+}
+
+function buildAnswerPlan(interpreted: InterpretedQuestion): string {
+  switch (interpreted.category) {
+    case 'planning':
+      return `Explain the purpose first, then what usually happens during planning, what the patient may feel, and what may happen next if the approved content supports it.`
+    case 'workflow':
+      return `Organize the answer as before, during and after the visit or treatment step when the approved content supports that structure.`
+    case 'side_effect':
+      return `Separate expected effects from symptoms to report. Include timing, practical precautions and doctor/team guidance only when present in the approved content.`
+    case 'skin_care':
+      return `Explain possible skin changes, what care steps are mentioned, what to avoid if stated, and when to ask the treating team.`
+    case 'oral_care':
+      return `Explain mouth or swallowing care in simple steps. Mention medicines or mouthwashes only as instructions from the treating team.`
+    case 'nutrition':
+      return `Give practical food or eating guidance only from the approved content. Avoid inventing diet plans.`
+    case 'rehabilitation':
+      return `Explain the purpose of exercises or rehabilitation, the documented steps at a high level, and remind the patient to follow the team if confirmation is required.`
+    case 'technique':
+      return `Explain the technique in plain language without recommending it or comparing it as a treatment choice.`
+    case 'precaution':
+      return `State the precaution clearly, explain why it matters if the content says so, and list the specific do or do-not steps that are documented.`
+    default:
+      return `Answer the exact question directly. If the approved content only partially covers it, say what is known and what should be discussed with the treating team.`
+  }
 }
