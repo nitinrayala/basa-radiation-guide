@@ -2,8 +2,8 @@ export type Language = 'en' | 'te'
 export type ChatAction = 'normal' | 'explain_more'
 
 export interface Env {
-  GROQ_API_KEY?: string
-  GROQ_MODEL?: string
+  GEMINI_API_KEY?: string
+  GEMINI_MODEL?: string
   ALLOWED_ORIGIN?: string
   ALLOWED_ORIGINS?: string
   MAX_OUTPUT_TOKENS_NORMAL?: string

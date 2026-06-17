@@ -36,14 +36,15 @@
   - [x] Added exact phrase, token, fuzzy, title, category, treatment-area and source-priority scoring.
   - [x] Added source-priority fallback results for empty lexical matches.
   - [x] Added focused retrieval tests for English, Telugu, Romanised Telugu, mixed-language, metadata boosts, fuzzy matching and fallback.
-- [x] Phase 5: Build Cloudflare Worker and Groq integration
+- [x] Phase 5: Build Cloudflare Worker and Gemini integration
   - [x] Implemented `POST /api/chat` in the Cloudflare Worker.
   - [x] Added request validation, CORS handling and JSON responses.
-  - [x] Added Groq REST integration using the server-side `GROQ_API_KEY` secret.
+  - [x] Added Gemini REST integration using the server-side `GEMINI_API_KEY` secret.
+  - [x] Switched the Worker model provider from Groq back to Gemini.
   - [x] Added compact question interpretation and document-grounded answer generation calls.
-  - [x] Reused local retrieval so Groq receives only relevant approved chunks.
-  - [x] Added safe fallback behavior when Groq is not configured or unavailable.
-  - [x] Added Worker tests with mocked Groq responses.
+  - [x] Reused local retrieval so Gemini receives only relevant approved chunks.
+  - [x] Added safe fallback behavior when Gemini is not configured or unavailable.
+  - [x] Added Worker tests with mocked Gemini responses.
   - [x] Verified Worker bundling with `wrangler deploy --dry-run`.
 - [x] Phase 6: Add English/Telugu and mixed-language handling
   - [x] Wired the frontend chat client to call the configured Cloudflare Worker.
@@ -57,21 +58,21 @@
   - [x] Added topic-aware follow-up suggestion generation for planning, workflow, side effects, skin care, oral care, nutrition, rehabilitation and head/neck mask topics.
   - [x] Ensured every answer path includes an Explain More suggestion.
   - [x] Updated Explain More prompting to expand previous context instead of repeating the same answer.
-  - [x] Made fallback answers return relevant follow-up suggestions when Groq is unavailable.
+  - [x] Made fallback answers return relevant follow-up suggestions when Gemini is unavailable.
   - [x] Made frontend suggestion clicks use the structured `question` field when present.
   - [x] Cleaned Telugu mock-mode suggestions and Explain More text.
   - [x] Added Worker tests for English and Telugu suggestion behavior.
-  - [x] Improved answer-generation instructions so Groq restructures retrieved content into clearer patient-friendly explanations.
+  - [x] Improved answer-generation instructions so Gemini restructures retrieved content into clearer patient-friendly explanations.
   - [x] Prioritized curated topic-aware suggestions before model-generated suggestions.
   - [x] Refined mask, planning and side-effect follow-ups to sound more conversational.
   - [x] Increased normal and Explain More answer depth so responses include patient-friendly context instead of overly short summaries.
 - [x] Phase 8: Add fallbacks and safety validation
-  - [x] Added a Worker-side safety classifier before retrieval and Groq answer generation.
+  - [x] Added a Worker-side safety classifier before retrieval and Gemini answer generation.
   - [x] Blocked diagnosis/report interpretation, treatment-technique recommendations, medication changes, stopping/skipping treatment, dose/session advice, survival predictions and unrelated topics.
   - [x] Returned controlled doctor-discussion responses with safe follow-up suggestions for blocked questions.
-  - [x] Treated Groq interpretation `isOutsideScope` as a controlled safety response.
+  - [x] Treated Gemini interpretation `isOutsideScope` as a controlled safety response.
   - [x] Added one retry for answer-generation failures before fallback.
-  - [x] Allowed useful non-JSON Groq answers to be used instead of over-triggering fallback.
+  - [x] Allowed useful non-JSON Gemini answers to be used instead of over-triggering fallback.
   - [x] Improved fallback answer formatting and fixed Telugu fallback strings.
   - [x] Added Worker regression tests for safety and fallback behavior.
 - [x] Phase 9: Add tests
@@ -90,7 +91,7 @@
   - [x] Updated Worker local environment example to use `ALLOWED_ORIGINS`.
   - [x] Added deployment configuration tests for Pages assets, Worker URL and workflow artifact publishing.
 - [x] Phase 11: Final validation and documentation
-  - [x] Replaced the README with current architecture, setup, content pipeline, retrieval, Groq, safety, fallback, deployment, testing and document-update instructions.
+  - [x] Replaced the README with current architecture, setup, content pipeline, retrieval, Gemini, safety, fallback, deployment, testing and document-update instructions.
   - [x] Documented mock mode, Worker secrets, GitHub Pages deployment and privacy limitations.
   - [x] Ran lint, typecheck, test, content validation and production build successfully.
   - [x] Deployed the final Worker update.

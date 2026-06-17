@@ -1,4 +1,4 @@
-import { createGroqChatCompletion } from './groq'
+import { createGeminiContent } from './gemini'
 import { answerSystemPrompt, buildAnswerPrompt } from './prompts'
 import { buildFollowUpSuggestions, ensureExplainMoreSuggestion } from './suggestions'
 import type { KnowledgeChunk } from '../../src/features/retrieval/retrievalTypes'
@@ -97,15 +97,15 @@ async function createAnswerCompletion(
 ): Promise<string> {
   const maxOutputTokens = request.action === 'explain_more' ? env.MAX_OUTPUT_TOKENS_EXPANDED : env.MAX_OUTPUT_TOKENS_NORMAL
 
-  return createGroqChatCompletion(apiKey, {
-    model: env.GROQ_MODEL || 'llama-3.1-8b-instant',
+  return createGeminiContent(apiKey, {
+    model: env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
+    systemInstruction: answerSystemPrompt,
     messages: [
-      { role: 'system', content: answerSystemPrompt },
-      { role: 'user', content: buildAnswerPrompt(request, interpreted, chunks) },
+      { role: 'user', text: buildAnswerPrompt(request, interpreted, chunks) },
     ],
     temperature: 0.2,
-    max_completion_tokens: Number.parseInt(maxOutputTokens || '', 10) || (request.action === 'explain_more' ? 900 : 500),
-    response_format: { type: 'json_object' },
+    maxOutputTokens: Number.parseInt(maxOutputTokens || '', 10) || (request.action === 'explain_more' ? 1400 : 850),
+    responseMimeType: 'application/json',
   })
 }
 
@@ -115,16 +115,16 @@ export async function generateAnswer(
   chunks: KnowledgeChunk[],
   env: Env,
 ): Promise<ChatAnswer> {
-  if (!env.GROQ_API_KEY) {
-    throw new Error('GROQ_API_KEY is not configured.')
+  if (!env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured.')
   }
 
   let text: string
   try {
-    text = await createAnswerCompletion(env.GROQ_API_KEY, request, interpreted, chunks, env)
+    text = await createAnswerCompletion(env.GEMINI_API_KEY, request, interpreted, chunks, env)
   } catch {
     await sleep(250)
-    text = await createAnswerCompletion(env.GROQ_API_KEY, request, interpreted, chunks, env)
+    text = await createAnswerCompletion(env.GEMINI_API_KEY, request, interpreted, chunks, env)
   }
 
   return parseChatAnswer(text, request, interpreted, chunks)

@@ -21,9 +21,9 @@ https://basa-radiation-guide-api.botradiation.workers.dev/api/chat
 - A single-page patient information chatbot.
 - English and Telugu UI.
 - Supports English, Telugu script, Romanised Telugu and mixed Telugu-English questions.
-- Uses local document retrieval plus a two-stage Groq flow.
+- Uses local document retrieval plus a two-stage Gemini flow.
 - Hosted as static frontend files on GitHub Pages.
-- Uses a Cloudflare Worker for retrieval, safety checks and Groq calls.
+- Uses a Cloudflare Worker for retrieval, safety checks and Gemini calls.
 
 ## What This Is Not
 
@@ -91,19 +91,19 @@ The local retrieval engine scores generated chunks using:
 
 Romanised Telugu examples such as `enduku`, `eppudu`, `noppi`, `manta`, `tindi`, `neellu`, `mingadam`, `gonthu` and related mixed-language phrasing are normalized for retrieval.
 
-## Groq Flow
+## Gemini Flow
 
 The Worker uses two stages:
 
-1. **Interpretation:** Groq converts the patient question into compact retrieval metadata.
-2. **Answer generation:** the Worker retrieves relevant chunks and sends only those chunks, the interpreted intent and recent history to Groq.
+1. **Interpretation:** Gemini converts the patient question into compact retrieval metadata.
+2. **Answer generation:** the Worker retrieves relevant chunks and sends only those chunks, the interpreted intent and recent history to Gemini.
 
-The frontend never calls Groq directly and never contains the Groq API key.
+The frontend never calls Gemini directly and never contains the Gemini API key.
 
 Configured model:
 
 ```text
-llama-3.1-8b-instant
+gemini-2.5-flash-lite
 ```
 
 ## Safety Behavior
@@ -128,11 +128,11 @@ The chat shows initial suggestions on open. After every answer, the Worker retur
 
 ## Fallbacks
 
-If Groq fails:
+If Gemini fails:
 
 - the Worker retries answer generation once
-- if Groq returns useful non-JSON text, the Worker can still use it safely
-- otherwise it returns a document-based fallback from retrieved chunks
+- if Gemini returns useful non-JSON text, the Worker can still use it safely
+- otherwise it returns a short unavailable message instead of dumping raw document chunks
 - the chat still shows suggestions
 
 ## Local Development
@@ -171,7 +171,7 @@ VITE_USE_MOCK_CHAT=false
 
 ## Mock Mode
 
-Mock frontend mode avoids Worker/Groq calls:
+Mock frontend mode avoids Worker/Gemini calls:
 
 ```text
 VITE_USE_MOCK_CHAT=true
@@ -184,8 +184,8 @@ Tests automatically use mock chat mode.
 Copy `worker/.dev.vars.example` to `worker/.dev.vars`:
 
 ```text
-GROQ_API_KEY=
-GROQ_MODEL=llama-3.1-8b-instant
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash-lite
 ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 MAX_OUTPUT_TOKENS_NORMAL=850
 MAX_OUTPUT_TOKENS_EXPANDED=1400
@@ -198,10 +198,10 @@ Run the Worker locally:
 npm run worker:dev
 ```
 
-Set the deployed Groq secret:
+Set the deployed Gemini secret:
 
 ```bash
-npx wrangler secret put GROQ_API_KEY --config worker/wrangler.toml
+npx wrangler secret put GEMINI_API_KEY --config worker/wrangler.toml
 ```
 
 Deploy the Worker:
@@ -259,7 +259,7 @@ Current test coverage includes:
 - retrieval behavior for English, Telugu script, Romanised Telugu and mixed-language questions
 - safety guardrails
 - suggestion generation
-- Worker Groq/fallback behavior
+- Worker Gemini/fallback behavior
 - frontend chat behavior
 - deployment configuration
 
@@ -284,7 +284,7 @@ npm run content:validate
 - The Worker sends only retrieved chunks, not all documents.
 - Only the latest six history messages are retained.
 - Normal and expanded answer token limits are configurable.
-- Safety-blocked questions do not call Groq.
+- Safety-blocked questions do not call Gemini.
 
 Typical limits are controlled by:
 
@@ -301,6 +301,6 @@ The UI tells users not to enter names, phone numbers, hospital numbers or report
 ## Known Limitations
 
 - PPTX files currently have no extractable slide text without OCR.
-- Telugu quality depends on the Groq model output and the source material.
+- Telugu quality depends on the Gemini model output and the source material.
 - The bot is informational only and should not replace the treating doctor.
-- Groq free-tier rate/token limits can affect live usage.
+- Gemini rate/token limits can affect live usage.
