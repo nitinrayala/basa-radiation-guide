@@ -103,7 +103,7 @@
   - [x] Made guided button clicks add cached local question/answer messages without calling Gemini or the Worker.
   - [x] Kept typed patient doubts on the existing Worker/Gemini retrieval path.
   - [x] Kept typed questions separate from guided progress so search does not advance the journey.
-  - [x] Added localStorage persistence for selected language and guided journey progress.
+  - [x] Added localStorage persistence for selected language and separate English/Telugu guided journey progress.
   - [x] Added restart behavior that clears guided journey messages and keeps the selected language.
   - [x] Repaired Telugu locale strings used by the guided UI.
   - [x] Fixed guided/search message ordering by rendering a single chronological chat timeline.

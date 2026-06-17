@@ -5,14 +5,23 @@ import type { ChatMessage, Language } from './chatTypes'
 import { locales } from '../../locales'
 
 let messageCounter = 0
+let messageSequence = 0
 
-const journeyProgressStorageKey = 'basa-radiation-guide:journey-progress'
+const journeyProgressStorageKeyPrefix = 'basa-radiation-guide:journey-progress'
 const guideAnswerDelayMs = import.meta.env.MODE === 'test' ? 1 : 750
+const languages: Language[] = ['en', 'te']
 
 interface StoredJourneyProgress {
   currentStepId: string | null
   completedStepIds: string[]
 }
+
+interface ChatSession {
+  progress: StoredJourneyProgress
+  timelineMessages: ChatMessage[]
+}
+
+type ChatSessions = Record<Language, ChatSession>
 
 const createId = () => {
   messageCounter += 1
@@ -20,36 +29,69 @@ const createId = () => {
   return `message-${messageCounter}`
 }
 
+const createSequence = () => {
+  messageSequence += 1
+
+  return messageSequence
+}
+
 const delay = (durationMs: number) =>
   new Promise<void>((resolve) => {
     window.setTimeout(resolve, durationMs)
   })
 
-function readStoredJourneyProgress(): StoredJourneyProgress {
-  if (typeof window === 'undefined') {
-    return { currentStepId: firstJourneyStepId, completedStepIds: [] }
-  }
+function defaultProgress(): StoredJourneyProgress {
+  return { currentStepId: firstJourneyStepId, completedStepIds: [] }
+}
+
+function progressStorageKey(language: Language): string {
+  return `${journeyProgressStorageKeyPrefix}:${language}`
+}
+
+function readLegacyStoredJourneyProgress(): StoredJourneyProgress | null {
+  if (typeof window === 'undefined') return null
 
   try {
-    const rawValue = window.localStorage.getItem(journeyProgressStorageKey)
-    if (!rawValue) return { currentStepId: firstJourneyStepId, completedStepIds: [] }
+    const rawValue = window.localStorage.getItem(journeyProgressStorageKeyPrefix)
+    if (!rawValue) return null
 
-    const parsed = JSON.parse(rawValue) as Partial<StoredJourneyProgress>
-    const completedStepIds = Array.isArray(parsed.completedStepIds)
-      ? parsed.completedStepIds.filter((value): value is string => typeof value === 'string' && Boolean(getJourneyStep(value)))
-      : []
-    const currentStepId = typeof parsed.currentStepId === 'string' && getJourneyStep(parsed.currentStepId) ? parsed.currentStepId : firstJourneyStepId
-
-    return { currentStepId, completedStepIds }
+    return parseStoredJourneyProgress(rawValue)
   } catch {
-    return { currentStepId: firstJourneyStepId, completedStepIds: [] }
+    return null
   }
 }
 
-function storeJourneyProgress(progress: StoredJourneyProgress) {
+function parseStoredJourneyProgress(rawValue: string): StoredJourneyProgress {
+  const parsed = JSON.parse(rawValue) as Partial<StoredJourneyProgress>
+  const completedStepIds = Array.isArray(parsed.completedStepIds)
+    ? parsed.completedStepIds.filter((value): value is string => typeof value === 'string' && Boolean(getJourneyStep(value)))
+    : []
+  const currentStepId = typeof parsed.currentStepId === 'string' && getJourneyStep(parsed.currentStepId) ? parsed.currentStepId : firstJourneyStepId
+
+  return { currentStepId, completedStepIds }
+}
+
+function readStoredJourneyProgress(language: Language): StoredJourneyProgress {
+  if (typeof window === 'undefined') return defaultProgress()
+
+  try {
+    const rawValue = window.localStorage.getItem(progressStorageKey(language))
+    if (rawValue) return parseStoredJourneyProgress(rawValue)
+
+    if (language === 'en') {
+      return readLegacyStoredJourneyProgress() ?? defaultProgress()
+    }
+
+    return defaultProgress()
+  } catch {
+    return defaultProgress()
+  }
+}
+
+function storeJourneyProgress(language: Language, progress: StoredJourneyProgress) {
   if (typeof window === 'undefined') return
 
-  window.localStorage.setItem(journeyProgressStorageKey, JSON.stringify(progress))
+  window.localStorage.setItem(progressStorageKey(language), JSON.stringify(progress))
 }
 
 function createGreetingMessage(): ChatMessage {
@@ -57,6 +99,7 @@ function createGreetingMessage(): ChatMessage {
     id: 'initial-greeting',
     role: 'assistant',
     content: '',
+    sequence: createSequence(),
     kind: 'greeting',
   }
 }
@@ -71,6 +114,7 @@ function createJourneyMessages(completedStepIds: string[]): ChatMessage[] {
         id: `journey-${step.id}-question`,
         role: 'user',
         content: '',
+        sequence: createSequence(),
         kind: 'journey',
         journeyStepId: step.id,
         journeyPart: 'question',
@@ -79,6 +123,7 @@ function createJourneyMessages(completedStepIds: string[]): ChatMessage[] {
         id: `journey-${step.id}-answer`,
         role: 'assistant',
         content: '',
+        sequence: createSequence(),
         kind: 'journey',
         journeyStepId: step.id,
         journeyPart: 'answer',
@@ -109,32 +154,68 @@ function createInitialTimeline(progress: StoredJourneyProgress): ChatMessage[] {
   return [createGreetingMessage(), ...createJourneyMessages(progress.completedStepIds)]
 }
 
+function createInitialSession(language: Language): ChatSession {
+  const progress = readStoredJourneyProgress(language)
+
+  return {
+    progress,
+    timelineMessages: createInitialTimeline(progress),
+  }
+}
+
+function createInitialSessions(): ChatSessions {
+  return {
+    en: createInitialSession('en'),
+    te: createInitialSession('te'),
+  }
+}
+
 export function useChat(language: Language) {
-  const [progress, setProgress] = useState<StoredJourneyProgress>(() => readStoredJourneyProgress())
-  const [timelineMessages, setTimelineMessages] = useState<ChatMessage[]>(() => createInitialTimeline(readStoredJourneyProgress()))
+  const [sessions, setSessions] = useState<ChatSessions>(() => createInitialSessions())
   const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const currentSession = sessions[language]
+  const { progress, timelineMessages } = currentSession
 
   useEffect(() => {
-    storeJourneyProgress(progress)
-  }, [progress])
+    for (const currentLanguage of languages) {
+      storeJourneyProgress(currentLanguage, sessions[currentLanguage].progress)
+    }
+  }, [sessions])
 
-  const messages = useMemo(() => timelineMessages.map((message) => translateMessage(message, language)), [language, timelineMessages])
+  const setCurrentSession = useCallback(
+    (updater: (currentSession: ChatSession) => ChatSession) => {
+      setSessions((currentSessions) => ({
+        ...currentSessions,
+        [language]: updater(currentSessions[language]),
+      }))
+    },
+    [language],
+  )
+
+  const messages = useMemo(
+    () => [...timelineMessages].sort((first, second) => first.sequence - second.sequence).map((message) => translateMessage(message, language)),
+    [language, timelineMessages],
+  )
   const currentJourneyStep = getJourneyStep(progress.currentStepId)
   const nextGuideLabel = currentJourneyStep ? currentJourneyStep.question[language] : locales[language].restartGuideLabel
 
   const resetGuide = useCallback(() => {
-    setProgress({ currentStepId: firstJourneyStepId, completedStepIds: [] })
-    setTimelineMessages((currentMessages) => currentMessages.filter((message) => message.kind !== 'journey'))
+    setCurrentSession((session) => ({
+      progress: defaultProgress(),
+      timelineMessages: session.timelineMessages.filter((message) => message.kind !== 'journey'),
+    }))
     setErrorMessage('')
-  }, [])
+  }, [setCurrentSession])
 
   const resetChat = useCallback(() => {
-    setProgress({ currentStepId: firstJourneyStepId, completedStepIds: [] })
-    setTimelineMessages([createGreetingMessage()])
+    setCurrentSession(() => ({
+      progress: defaultProgress(),
+      timelineMessages: [createGreetingMessage()],
+    }))
     setErrorMessage('')
     setIsLoading(false)
-  }, [])
+  }, [setCurrentSession])
 
   const advanceJourney = useCallback(async () => {
     if (isLoading) return
@@ -148,12 +229,16 @@ export function useChat(language: Language) {
       id: `journey-${currentJourneyStep.id}-question`,
       role: 'user',
       content: '',
+      sequence: createSequence(),
       kind: 'journey',
       journeyStepId: currentJourneyStep.id,
       journeyPart: 'question',
     }
 
-    setTimelineMessages((currentMessages) => [...currentMessages, questionMessage])
+    setCurrentSession((session) => ({
+      ...session,
+      timelineMessages: [...session.timelineMessages, questionMessage],
+    }))
     setErrorMessage('')
     setIsLoading(true)
 
@@ -163,20 +248,23 @@ export function useChat(language: Language) {
       id: `journey-${currentJourneyStep.id}-answer`,
       role: 'assistant',
       content: '',
+      sequence: createSequence(),
       kind: 'journey',
       journeyStepId: currentJourneyStep.id,
       journeyPart: 'answer',
     }
 
-    setTimelineMessages((currentMessages) => [...currentMessages, answerMessage])
-    setProgress((currentProgress) => ({
-      currentStepId: currentJourneyStep.nextStepId,
-      completedStepIds: currentProgress.completedStepIds.includes(currentJourneyStep.id)
-        ? currentProgress.completedStepIds
-        : [...currentProgress.completedStepIds, currentJourneyStep.id],
+    setCurrentSession((session) => ({
+      progress: {
+        currentStepId: currentJourneyStep.nextStepId,
+        completedStepIds: session.progress.completedStepIds.includes(currentJourneyStep.id)
+          ? session.progress.completedStepIds
+          : [...session.progress.completedStepIds, currentJourneyStep.id],
+      },
+      timelineMessages: [...session.timelineMessages, answerMessage],
     }))
     setIsLoading(false)
-  }, [currentJourneyStep, isLoading, resetGuide])
+  }, [currentJourneyStep, isLoading, resetGuide, setCurrentSession])
 
   const submitQuestion = useCallback(
     async (question: string, action: 'normal' | 'explain_more' = 'normal') => {
@@ -190,11 +278,15 @@ export function useChat(language: Language) {
         id: createId(),
         role: 'user',
         content: trimmedQuestion,
+        sequence: createSequence(),
         kind: 'search',
       }
 
       const nextTimelineMessages = [...timelineMessages, userMessage]
-      setTimelineMessages(nextTimelineMessages)
+      setCurrentSession((session) => ({
+        ...session,
+        timelineMessages: nextTimelineMessages,
+      }))
       setErrorMessage('')
       setIsLoading(true)
 
@@ -210,17 +302,20 @@ export function useChat(language: Language) {
           history: searchHistory,
         })
 
-        setTimelineMessages((currentMessages) => [
-          ...currentMessages,
-          { id: createId(), role: 'assistant', content: response.answer, kind: 'search' },
-        ])
+        setCurrentSession((session) => ({
+          ...session,
+          timelineMessages: [
+            ...session.timelineMessages,
+            { id: createId(), role: 'assistant', content: response.answer, sequence: createSequence(), kind: 'search' },
+          ],
+        }))
       } catch {
         setErrorMessage(locales[language].errorMessage)
       } finally {
         setIsLoading(false)
       }
     },
-    [isLoading, language, timelineMessages],
+    [isLoading, language, setCurrentSession, timelineMessages],
   )
 
   return {

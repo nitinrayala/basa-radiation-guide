@@ -112,18 +112,46 @@ describe('App guided radiation journey UI', () => {
     expect(guidedQuestionIndex).toBeGreaterThan(typedQuestionIndex)
   })
 
-  it('switches language while preserving guided progress and translating cached journey messages', async () => {
+  it('appends the next guided step after an existing typed question and typed answer', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: 'What is radiation therapy?' }))
     expect(await screen.findByText(/uses high-energy radiation/i)).toBeInTheDocument()
+
+    const input = screen.getByLabelText('Type your question...')
+    fireEvent.change(input, { target: { value: 'hello' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }))
+    expect(await screen.findByText(/mock interface response/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Why is radiation therapy used?' }))
+    expect(await screen.findByText(/may be used to treat cancer cells/i)).toBeInTheDocument()
+
+    const visibleMessages = screen.getAllByRole('article').map((message) => message.textContent ?? '')
+    const typedAnswerIndex = visibleMessages.findIndex((message) => message.includes('mock interface response'))
+    const nextGuidedQuestionIndex = visibleMessages.findIndex((message) => message.includes('Why is radiation therapy used?'))
+    const nextGuidedAnswerIndex = visibleMessages.findIndex((message) => message.includes('may be used to treat cancer cells'))
+
+    expect(nextGuidedQuestionIndex).toBeGreaterThan(typedAnswerIndex)
+    expect(nextGuidedAnswerIndex).toBeGreaterThan(nextGuidedQuestionIndex)
+  })
+
+  it('keeps English and Telugu guided chat progress separate', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'What is radiation therapy?' }))
+    expect(await screen.findByText(/uses high-energy radiation/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Why is radiation therapy used?' })).toBeInTheDocument()
+
     fireEvent.click(screen.getByRole('button', { name: 'తెలుగు' }))
 
     expect(screen.getByText(/నమస్కారం/)).toBeInTheDocument()
-    expect(screen.getByText('రేడియేషన్ థెరపీ అంటే ఏమిటి?')).toBeInTheDocument()
-    expect(screen.getByText(/అధిక శక్తి రేడియేషన్/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'రేడియేషన్ థెరపీ ఎందుకు ఉపయోగిస్తారు?' })).toBeInTheDocument()
-    expect(screen.getByLabelText('మీ ప్రశ్నను టైప్ చేయండి...')).toBeInTheDocument()
+    expect(screen.queryByText(/uses high-energy radiation/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'రేడియేషన్ థెరపీ అంటే ఏమిటి?' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'English' }))
+
+    expect(screen.getByText(/uses high-energy radiation/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Why is radiation therapy used?' })).toBeInTheDocument()
   })
 
   it('clear chat resets search messages and guided progress in the selected language', async () => {

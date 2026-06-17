@@ -122,10 +122,11 @@ Only one guided question button is shown at a time. Clicking it adds the cached 
 
 To edit a cached answer, update the matching `answer.en` or `answer.te` in `src/content/radiationJourney.ts`. To change the order, update each step's `nextStepId`. To add a new stage, add a new `JourneyStep` and link it from the previous step.
 
-Guided journey progress is stored in `localStorage` under:
+Guided journey progress is stored separately for each language in `localStorage` under:
 
 ```text
-basa-radiation-guide:journey-progress
+basa-radiation-guide:journey-progress:en
+basa-radiation-guide:journey-progress:te
 ```
 
 The selected language is stored under:
@@ -135,6 +136,8 @@ basa-radiation-guide:language
 ```
 
 Typed search messages are not stored on a backend.
+
+These browser values do not expire on a timer. They remain until the user clears site data, uses the app's clear-chat control for the current language, or the app changes/removes the keys in a future release.
 
 ## AI Search Flow
 
