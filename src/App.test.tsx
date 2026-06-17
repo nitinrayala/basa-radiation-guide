@@ -154,6 +154,27 @@ describe('App guided radiation journey UI', () => {
     expect(screen.getByRole('button', { name: 'Why is radiation therapy used?' })).toBeInTheDocument()
   })
 
+  it('keeps English and Telugu typed chat messages separate', async () => {
+    render(<App />)
+
+    const input = screen.getByLabelText('Type your question...')
+    fireEvent.change(input, { target: { value: 'hello' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }))
+    expect(await screen.findByText('hello')).toBeInTheDocument()
+    expect(await screen.findByText(/mock interface response/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'తెలుగు' }))
+
+    expect(screen.queryByText('hello')).not.toBeInTheDocument()
+    expect(screen.queryByText(/mock interface response/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText('మీ ప్రశ్నను టైప్ చేయండి...')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'English' }))
+
+    expect(screen.getByText('hello')).toBeInTheDocument()
+    expect(screen.getByText(/mock interface response/i)).toBeInTheDocument()
+  })
+
   it('clear chat resets search messages and guided progress in the selected language', async () => {
     render(<App />)
 

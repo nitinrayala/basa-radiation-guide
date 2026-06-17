@@ -94,17 +94,18 @@ function storeJourneyProgress(language: Language, progress: StoredJourneyProgres
   window.localStorage.setItem(progressStorageKey(language), JSON.stringify(progress))
 }
 
-function createGreetingMessage(): ChatMessage {
+function createGreetingMessage(language: Language): ChatMessage {
   return {
     id: 'initial-greeting',
     role: 'assistant',
     content: '',
     sequence: createSequence(),
+    language,
     kind: 'greeting',
   }
 }
 
-function createJourneyMessages(completedStepIds: string[]): ChatMessage[] {
+function createJourneyMessages(language: Language, completedStepIds: string[]): ChatMessage[] {
   return completedStepIds.flatMap((stepId): ChatMessage[] => {
     const step = getJourneyStep(stepId)
     if (!step) return []
@@ -115,6 +116,7 @@ function createJourneyMessages(completedStepIds: string[]): ChatMessage[] {
         role: 'user',
         content: '',
         sequence: createSequence(),
+        language,
         kind: 'journey',
         journeyStepId: step.id,
         journeyPart: 'question',
@@ -124,6 +126,7 @@ function createJourneyMessages(completedStepIds: string[]): ChatMessage[] {
         role: 'assistant',
         content: '',
         sequence: createSequence(),
+        language,
         kind: 'journey',
         journeyStepId: step.id,
         journeyPart: 'answer',
@@ -150,8 +153,8 @@ function translateMessage(message: ChatMessage, language: Language): ChatMessage
   return message
 }
 
-function createInitialTimeline(progress: StoredJourneyProgress): ChatMessage[] {
-  return [createGreetingMessage(), ...createJourneyMessages(progress.completedStepIds)]
+function createInitialTimeline(language: Language, progress: StoredJourneyProgress): ChatMessage[] {
+  return [createGreetingMessage(language), ...createJourneyMessages(language, progress.completedStepIds)]
 }
 
 function createInitialSession(language: Language): ChatSession {
@@ -159,7 +162,7 @@ function createInitialSession(language: Language): ChatSession {
 
   return {
     progress,
-    timelineMessages: createInitialTimeline(progress),
+    timelineMessages: createInitialTimeline(language, progress),
   }
 }
 
@@ -194,7 +197,11 @@ export function useChat(language: Language) {
   )
 
   const messages = useMemo(
-    () => [...timelineMessages].sort((first, second) => first.sequence - second.sequence).map((message) => translateMessage(message, language)),
+    () =>
+      [...timelineMessages]
+        .filter((message) => message.language === language)
+        .sort((first, second) => first.sequence - second.sequence)
+        .map((message) => translateMessage(message, language)),
     [language, timelineMessages],
   )
   const currentJourneyStep = getJourneyStep(progress.currentStepId)
@@ -211,11 +218,11 @@ export function useChat(language: Language) {
   const resetChat = useCallback(() => {
     setCurrentSession(() => ({
       progress: defaultProgress(),
-      timelineMessages: [createGreetingMessage()],
+      timelineMessages: [createGreetingMessage(language)],
     }))
     setErrorMessage('')
     setIsLoading(false)
-  }, [setCurrentSession])
+  }, [language, setCurrentSession])
 
   const advanceJourney = useCallback(async () => {
     if (isLoading) return
@@ -230,6 +237,7 @@ export function useChat(language: Language) {
       role: 'user',
       content: '',
       sequence: createSequence(),
+      language,
       kind: 'journey',
       journeyStepId: currentJourneyStep.id,
       journeyPart: 'question',
@@ -249,6 +257,7 @@ export function useChat(language: Language) {
       role: 'assistant',
       content: '',
       sequence: createSequence(),
+      language,
       kind: 'journey',
       journeyStepId: currentJourneyStep.id,
       journeyPart: 'answer',
@@ -264,7 +273,7 @@ export function useChat(language: Language) {
       timelineMessages: [...session.timelineMessages, answerMessage],
     }))
     setIsLoading(false)
-  }, [currentJourneyStep, isLoading, resetGuide, setCurrentSession])
+  }, [currentJourneyStep, isLoading, language, resetGuide, setCurrentSession])
 
   const submitQuestion = useCallback(
     async (question: string, action: 'normal' | 'explain_more' = 'normal') => {
@@ -279,6 +288,7 @@ export function useChat(language: Language) {
         role: 'user',
         content: trimmedQuestion,
         sequence: createSequence(),
+        language,
         kind: 'search',
       }
 
@@ -306,7 +316,7 @@ export function useChat(language: Language) {
           ...session,
           timelineMessages: [
             ...session.timelineMessages,
-            { id: createId(), role: 'assistant', content: response.answer, sequence: createSequence(), kind: 'search' },
+            { id: createId(), role: 'assistant', content: response.answer, sequence: createSequence(), language, kind: 'search' },
           ],
         }))
       } catch {

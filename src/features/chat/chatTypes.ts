@@ -14,6 +14,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   sequence: number
+  language: Language
   kind?: 'greeting' | 'journey' | 'search'
   journeyStepId?: string
   journeyPart?: 'question' | 'answer'
