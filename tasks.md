@@ -106,5 +106,7 @@
   - [x] Added localStorage persistence for selected language and guided journey progress.
   - [x] Added restart behavior that clears guided journey messages and keeps the selected language.
   - [x] Repaired Telugu locale strings used by the guided UI.
+  - [x] Fixed guided/search message ordering by rendering a single chronological chat timeline.
+  - [x] Added a short cached-answer waiting state so guided answers do not appear instantly.
   - [x] Updated frontend tests for one guided button, cached answers, restart, language switching and mobile widths.
   - [x] Updated README and PROJECT_SPEC with the guided-journey-first architecture.

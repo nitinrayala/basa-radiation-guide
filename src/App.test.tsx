@@ -24,28 +24,29 @@ describe('App guided radiation journey UI', () => {
     expect(screen.getAllByLabelText('Next guide step')).toHaveLength(1)
   })
 
-  it('clicking the guided question adds the cached answer and advances the button', () => {
+  it('clicking the guided question waits briefly, adds the cached answer and advances the button', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: 'What is radiation therapy?' }))
 
-    expect(screen.getByText('What is radiation therapy?')).toBeInTheDocument()
-    expect(screen.getByText(/uses high-energy radiation/i)).toBeInTheDocument()
+    expect(screen.getAllByText('What is radiation therapy?').length).toBeGreaterThan(0)
+    expect(screen.getByLabelText('Preparing a response')).toBeInTheDocument()
+    expect(await screen.findByText(/uses high-energy radiation/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Why is radiation therapy used?' })).toBeInTheDocument()
   })
 
-  it('advances repeatedly through the cached journey', () => {
+  it('advances repeatedly through the cached journey', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: 'What is radiation therapy?' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Why is radiation therapy used?' }))
-    fireEvent.click(screen.getByRole('button', { name: 'What happens before treatment begins?' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Why is radiation therapy used?' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'What happens before treatment begins?' }))
 
-    expect(screen.getByRole('button', { name: 'What happens during the planning scan?' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'What happens during the planning scan?' })).toBeInTheDocument()
     expect(screen.getByText(/planning visit, positioning, and a planning scan/i)).toBeInTheDocument()
   })
 
-  it('shows the restart control at the end and restarts only the guided journey', () => {
+  it('shows the restart control at the end and restarts only the guided journey', async () => {
     render(<App />)
 
     const guideQuestions = [
@@ -65,10 +66,10 @@ describe('App guided radiation journey UI', () => {
     ]
 
     for (const question of guideQuestions) {
-      fireEvent.click(screen.getByRole('button', { name: question }))
+      fireEvent.click(await screen.findByRole('button', { name: question }))
     }
 
-    expect(screen.getByRole('button', { name: 'Start the guide again' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Start the guide again' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Start the guide again' }))
 
@@ -80,7 +81,7 @@ describe('App guided radiation journey UI', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: 'What is radiation therapy?' }))
-    expect(screen.getByRole('button', { name: 'Why is radiation therapy used?' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Why is radiation therapy used?' })).toBeInTheDocument()
 
     const input = screen.getByLabelText('Type your question...')
     fireEvent.change(input, { target: { value: 'Radiation mask enduku vestaru?' } })
@@ -92,10 +93,30 @@ describe('App guided radiation journey UI', () => {
     expect(input).toBeEnabled()
   })
 
-  it('switches language while preserving guided progress and translating cached journey messages', () => {
+  it('keeps guided messages below typed search messages that came before them', async () => {
+    render(<App />)
+
+    const input = screen.getByLabelText('Type your question...')
+    fireEvent.change(input, { target: { value: 'Radiation mask enduku vestaru?' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }))
+    expect(await screen.findByText(/mock interface response/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'What is radiation therapy?' }))
+    expect(await screen.findByText(/uses high-energy radiation/i)).toBeInTheDocument()
+
+    const visibleMessages = screen.getAllByRole('article').map((message) => message.textContent ?? '')
+    const typedQuestionIndex = visibleMessages.findIndex((message) => message.includes('Radiation mask enduku vestaru?'))
+    const guidedQuestionIndex = visibleMessages.findIndex((message) => message.includes('What is radiation therapy?'))
+
+    expect(typedQuestionIndex).toBeGreaterThan(-1)
+    expect(guidedQuestionIndex).toBeGreaterThan(typedQuestionIndex)
+  })
+
+  it('switches language while preserving guided progress and translating cached journey messages', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: 'What is radiation therapy?' }))
+    expect(await screen.findByText(/uses high-energy radiation/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'తెలుగు' }))
 
     expect(screen.getByText(/నమస్కారం/)).toBeInTheDocument()
@@ -109,6 +130,7 @@ describe('App guided radiation journey UI', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: 'What is radiation therapy?' }))
+    expect(await screen.findByText(/uses high-energy radiation/i)).toBeInTheDocument()
     const input = screen.getByLabelText('Type your question...')
     fireEvent.change(input, { target: { value: 'Radiation mask enduku vestaru?' } })
     fireEvent.click(screen.getByRole('button', { name: 'Send' }))
