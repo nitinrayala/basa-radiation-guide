@@ -8,7 +8,7 @@ let messageCounter = 0
 let messageSequence = 0
 
 const journeyProgressStorageKeyPrefix = 'basa-radiation-guide:journey-progress'
-const guideAnswerDelayMs = import.meta.env.MODE === 'test' ? 1 : 25000
+const guideAnswerDelayMs = import.meta.env.MODE === 'test' ? 1 : 750
 const languages: Language[] = ['en', 'te']
 
 interface StoredJourneyProgress {
