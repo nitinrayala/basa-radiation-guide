@@ -5,8 +5,8 @@ const baseEnv: Env = {
   ALLOWED_ORIGINS: 'https://nitinrayala.github.io,http://localhost:5173',
   GROQ_MODEL: 'llama-3.1-8b-instant',
   MAX_HISTORY_MESSAGES: '6',
-  MAX_OUTPUT_TOKENS_NORMAL: '500',
-  MAX_OUTPUT_TOKENS_EXPANDED: '900',
+  MAX_OUTPUT_TOKENS_NORMAL: '850',
+  MAX_OUTPUT_TOKENS_EXPANDED: '1400',
 }
 
 function chatRequest(body: unknown): Request {
@@ -51,11 +51,11 @@ describe('Cloudflare Worker chat API', () => {
     const json = (await response.json()) as { answer: string; suggestions: Array<{ label: string; action: string }>; sources: Array<{ id: string }> }
 
     expect(response.status).toBe(200)
-    expect(json.answer).toMatch(/could not prepare the conversational version/i)
-    expect(json.answer).toMatch(/Thermoplastic mask|Immobilization/i)
+    expect(json.answer).toMatch(/could not prepare a reliable answer/i)
+    expect(json.answer).not.toMatch(/Thermoplastic mask|Immobilization|Radiation Planning/i)
     expect(json.suggestions.some((suggestion) => suggestion.label === 'Will the mask feel tight?')).toBe(true)
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
-    expect(json.sources.length).toBeGreaterThan(0)
+    expect(json.sources).toEqual([])
   })
 
   it('calls Groq interpretation and answer generation when configured', async () => {

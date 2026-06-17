@@ -64,6 +64,7 @@
   - [x] Improved answer-generation instructions so Groq restructures retrieved content into clearer patient-friendly explanations.
   - [x] Prioritized curated topic-aware suggestions before model-generated suggestions.
   - [x] Refined mask, planning and side-effect follow-ups to sound more conversational.
+  - [x] Increased normal and Explain More answer depth so responses include patient-friendly context instead of overly short summaries.
 - [x] Phase 8: Add fallbacks and safety validation
   - [x] Added a Worker-side safety classifier before retrieval and Groq answer generation.
   - [x] Blocked diagnosis/report interpretation, treatment-technique recommendations, medication changes, stopping/skipping treatment, dose/session advice, survival predictions and unrelated topics.
