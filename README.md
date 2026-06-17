@@ -1,8 +1,8 @@
 # BASA Radiation Guide
 
-Mobile-first English and Telugu radiation therapy information chatbot.
+Mobile-first English and Telugu radiation therapy guide with optional AI search.
 
-The app helps patients ask general questions about radiation therapy, planning, treatment sessions, side effects and care before speaking with their treating doctor. It answers only from the supplied source documents in `source-docs/`.
+The app guides patients through the general radiation therapy process step by step using cached, document-based explanations. Patients can also type specific doubts at any time; typed questions use document retrieval plus the Cloudflare Worker/Gemini answer flow.
 
 Live frontend:
 
@@ -18,10 +18,11 @@ https://basa-radiation-guide-api.botradiation.workers.dev/api/chat
 
 ## What This Is
 
-- A single-page patient information chatbot.
+- A single-page patient information guide.
 - English and Telugu UI.
+- A cached guided radiation journey that works without an API key or live AI provider.
 - Supports English, Telugu script, Romanised Telugu and mixed Telugu-English questions.
-- Uses local document retrieval plus a two-stage Gemini flow.
+- Uses local document retrieval plus Gemini only for typed patient doubts.
 - Hosted as static frontend files on GitHub Pages.
 - Uses a Cloudflare Worker for retrieval, safety checks and Gemini calls.
 
@@ -36,6 +37,7 @@ source-docs/                 Approved medical source documents
 data/content/                Extracted corpus and structured chunks
 scripts/content/             DOCX/PPTX extraction, chunking and validation
 src/                         React/Vite frontend
+src/content/radiationJourney.ts Cached English/Telugu guided journey
 src/features/retrieval/      Local retrieval engine
 src/features/chat/           Chat client and UI state
 src/data/knowledgeChunks.json Browser/Worker-shared generated chunks
@@ -99,9 +101,44 @@ Before scoring, the Worker applies a small metadata gate:
 - clear treatment-area questions can use general chunks plus matching treatment-specific chunks
 - medication or specific-instruction chunks require a clear matching treatment area
 
-## Gemini Flow
+## Guided Journey
 
-The Worker uses two stages:
+The main experience is a cached guided journey stored in:
+
+```text
+src/content/radiationJourney.ts
+```
+
+Each journey step has:
+
+- `id`
+- `order`
+- English and Telugu question text
+- English and Telugu cached answer text
+- `nextStepId`
+- source chunk IDs
+
+Only one guided question button is shown at a time. Clicking it adds the cached question and cached answer to the conversation, then advances the button to the next step. The final step shows `Start the guide again`, which clears only guided journey messages and resets the journey while preserving the selected language.
+
+To edit a cached answer, update the matching `answer.en` or `answer.te` in `src/content/radiationJourney.ts`. To change the order, update each step's `nextStepId`. To add a new stage, add a new `JourneyStep` and link it from the previous step.
+
+Guided journey progress is stored in `localStorage` under:
+
+```text
+basa-radiation-guide:journey-progress
+```
+
+The selected language is stored under:
+
+```text
+basa-radiation-guide:language
+```
+
+Typed search messages are not stored on a backend.
+
+## AI Search Flow
+
+Typed patient questions use the Worker. The current Worker uses two stages:
 
 1. **Interpretation:** Gemini converts the patient question into compact retrieval metadata.
 2. **Answer generation:** the Worker retrieves relevant chunks and sends only those chunks, the interpreted intent and recent history to Gemini.
@@ -128,11 +165,16 @@ The Worker blocks unsafe questions before answer generation, including:
 
 Blocked questions return a controlled response directing the patient to their treating doctor/team.
 
-## Suggestions and Explain More
+## Typed Doubts
 
-The chat shows initial suggestions on open. After every answer, the Worker returns three to five follow-up suggestions based on the patient question, retrieval metadata and retrieved chunks.
+The bottom input remains visible throughout the journey. A typed question:
 
-`Explain more` is always returned as a suggestion button. Clicking it adds a normal user message and sends the recent conversation as context so the Worker can retrieve and explain in more detail.
+1. Adds the patient question as a search message.
+2. Calls the configured Worker API.
+3. Uses retrieval over approved chunks.
+4. Shows the grounded answer as a search message.
+
+Typed questions do not advance or reset the guided journey stage. The single guided button remains the primary next-step interaction.
 
 ## Fallbacks
 
@@ -141,7 +183,8 @@ If Gemini fails:
 - the Worker retries answer generation once
 - if Gemini returns useful non-JSON text, the Worker can still use it safely
 - otherwise it returns a short unavailable message instead of dumping raw document chunks
-- the chat still shows suggestions
+- the guided journey still works because cached journey answers do not depend on Gemini
+- the current guided button remains visible
 
 ## Local Development
 
@@ -266,7 +309,8 @@ Current test coverage includes:
 
 - retrieval behavior for English, Telugu script, Romanised Telugu and mixed-language questions
 - safety guardrails
-- suggestion generation
+- cached guided journey behavior
+- typed questions staying independent from journey progress
 - Worker Gemini/fallback behavior
 - frontend chat behavior
 - deployment configuration

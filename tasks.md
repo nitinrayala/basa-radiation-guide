@@ -97,3 +97,14 @@
   - [x] Documented mock mode, Worker secrets, GitHub Pages deployment and privacy limitations.
   - [x] Ran lint, typecheck, test, content validation and production build successfully.
   - [x] Deployed the final Worker update.
+- [x] Architecture refactor: cached guided journey with optional AI search
+  - [x] Replaced multiple frontend suggested-question buttons with exactly one guided next-step button.
+  - [x] Added `src/content/radiationJourney.ts` with 13 cached English/Telugu radiation-process stages.
+  - [x] Made guided button clicks add cached local question/answer messages without calling Gemini or the Worker.
+  - [x] Kept typed patient doubts on the existing Worker/Gemini retrieval path.
+  - [x] Kept typed questions separate from guided progress so search does not advance the journey.
+  - [x] Added localStorage persistence for selected language and guided journey progress.
+  - [x] Added restart behavior that clears guided journey messages and keeps the selected language.
+  - [x] Repaired Telugu locale strings used by the guided UI.
+  - [x] Updated frontend tests for one guided button, cached answers, restart, language switching and mobile widths.
+  - [x] Updated README and PROJECT_SPEC with the guided-journey-first architecture.

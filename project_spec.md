@@ -1,5 +1,15 @@
 # Build a Mobile-First English and Telugu Radiation Information Chatbot
 
+## 2026 Architecture Update: Guided Journey First
+
+The primary user experience is now a cached guided radiation journey, not an AI-generated answer for every tap.
+
+The app must show exactly one guided next-step question above the sticky input. Clicking that guided question adds a cached question and cached answer from `src/content/radiationJourney.ts`, then advances to the next cached stage. Guided answers must be available in English and Telugu and must work without Gemini, Cloudflare Worker availability or any API key.
+
+The AI chatbot remains available only through the typed question input. Typed doubts use the existing approved-document retrieval and Worker/Gemini flow. Typed questions must not advance, reset or otherwise change the current guided journey stage.
+
+Remove or avoid old behavior that shows multiple initial suggestions, dynamic suggestion grids, AI-generated follow-up carousels, or generic `Explain more` as the primary journey mechanic. A secondary AI-specific expansion may be added later, but the main interaction is the single cached next-step guide button.
+
 You are the lead engineer working inside an existing GitHub repository.
 
 Inspect the entire repository before changing anything. Preserve useful existing code, but refactor or replace incomplete code where necessary.

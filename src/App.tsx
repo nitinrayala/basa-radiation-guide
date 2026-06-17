@@ -4,11 +4,13 @@ import { ChatInput } from './components/ChatInput'
 import { ChatMessage } from './components/ChatMessage'
 import { Disclaimer } from './components/Disclaimer'
 import { ErrorMessage } from './components/ErrorMessage'
-import { SuggestionButtons } from './components/SuggestionButtons'
+import { GuidedQuestionButton } from './components/GuidedQuestionButton'
 import { TypingIndicator } from './components/TypingIndicator'
 import { useChat } from './features/chat/useChat'
 import type { Language } from './features/chat/chatTypes'
 import { locales } from './locales'
+
+const languageStorageKey = 'basa-radiation-guide:language'
 
 interface ChatSurfaceProps {
   language: Language
@@ -18,7 +20,7 @@ interface ChatSurfaceProps {
 function ChatSurface({ language, onLanguageChange }: ChatSurfaceProps) {
   const t = locales[language]
   const latestMessageRef = useRef<HTMLDivElement>(null)
-  const { errorMessage, isLoading, messages, resetChat, submitQuestion, submitSuggestion, suggestions } = useChat(language)
+  const { advanceJourney, errorMessage, isLoading, messages, nextGuideLabel, resetChat, submitQuestion } = useChat(language)
 
   useEffect(() => {
     latestMessageRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' })
@@ -38,12 +40,7 @@ function ChatSurface({ language, onLanguageChange }: ChatSurfaceProps) {
       </section>
       <section className="composer-panel">
         {errorMessage ? <ErrorMessage message={errorMessage} /> : null}
-        <SuggestionButtons
-          disabled={isLoading}
-          label={t.suggestionsLabel}
-          suggestions={suggestions}
-          onSelect={submitSuggestion}
-        />
+        <GuidedQuestionButton disabled={isLoading} label={nextGuideLabel} onClick={advanceJourney} />
         <ChatInput
           askLabel={t.askLabel}
           disabled={isLoading}
@@ -59,11 +56,16 @@ function ChatSurface({ language, onLanguageChange }: ChatSurfaceProps) {
 }
 
 export default function App() {
-  const [language, setLanguage] = useState<Language>('en')
+  const [language, setLanguage] = useState<Language>(() => {
+    const storedLanguage = window.localStorage.getItem(languageStorageKey)
+
+    return storedLanguage === 'te' ? 'te' : 'en'
+  })
 
   useEffect(() => {
     document.documentElement.lang = language
+    window.localStorage.setItem(languageStorageKey, language)
   }, [language])
 
-  return <ChatSurface key={language} language={language} onLanguageChange={setLanguage} />
+  return <ChatSurface language={language} onLanguageChange={setLanguage} />
 }

@@ -178,31 +178,25 @@ h1 {
   background: rgba(255, 255, 255, 0.98);
 }
 
-.suggestions {
+.guided-action {
   display: grid;
-  gap: 0.45rem;
 }
 
-.suggestions button {
+.guided-action button {
   width: 100%;
-  border: 1px solid #b8dce6;
-  border-radius: 0.75rem;
-  padding: 0.65rem 0.78rem;
-  background: #f7fcfd;
-  color: #183641;
-  font-weight: 700;
-  text-align: left;
+  border: 1px solid #9ed7df;
+  border-radius: 0.9rem;
+  padding: 0.78rem 0.9rem;
+  background: #effbfc;
+  color: #12333d;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
   overflow-wrap: anywhere;
 }
 
-.suggestions button:active {
+.guided-action button:active {
   transform: translateY(1px);
-}
-
-.suggestions .suggestion-explain {
-  border-color: #a9d8c8;
-  background: #f2fbf3;
-  color: #1f573d;
 }
 
 .chat-input {
