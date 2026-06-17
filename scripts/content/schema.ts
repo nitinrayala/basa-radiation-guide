@@ -29,6 +29,10 @@ export const treatmentAreas = [
 
 export type TreatmentArea = (typeof treatmentAreas)[number]
 
+export const specificityValues = ['general', 'treatment_specific'] as const
+
+export type Specificity = (typeof specificityValues)[number]
+
 export interface ExtractedSection {
   id: string
   sourceFile: string
@@ -62,6 +66,7 @@ export interface KnowledgeChunk {
   content: string
   category: Category
   treatmentAreas: TreatmentArea[]
+  specificity: Specificity
   sourceFile: string
   sourceLocation?: string
   sourcePriority: number

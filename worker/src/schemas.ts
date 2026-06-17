@@ -65,6 +65,7 @@ export interface InterpretedQuestion {
     | 'follow_up'
     | 'unknown'
   treatmentAreas: string[]
+  treatmentAreaConfidence: number
   keyTerms: string[]
   isOutsideScope: boolean
 }

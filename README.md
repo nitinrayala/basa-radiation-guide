@@ -91,6 +91,14 @@ The local retrieval engine scores generated chunks using:
 
 Romanised Telugu examples such as `enduku`, `eppudu`, `noppi`, `manta`, `tindi`, `neellu`, `mingadam`, `gonthu` and related mixed-language phrasing are normalized for retrieval.
 
+Before scoring, the Worker applies a small metadata gate:
+
+- chunks are tagged as `general` or `treatment_specific`
+- Gemini returns a treatment-area confidence score
+- unknown or low-confidence treatment area questions use only general non-medication chunks
+- clear treatment-area questions can use general chunks plus matching treatment-specific chunks
+- medication or specific-instruction chunks require a clear matching treatment area
+
 ## Gemini Flow
 
 The Worker uses two stages:

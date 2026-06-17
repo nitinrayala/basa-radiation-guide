@@ -15,6 +15,7 @@ const maskChunk: KnowledgeChunk = {
   content: 'A thermoplastic mask helps with immobilization and positioning.',
   category: 'planning',
   treatmentAreas: ['head_neck'],
+  specificity: 'treatment_specific',
   sourceFile: 'Radiation Planning-ChatBot.docx',
   sourcePriority: 4,
   containsMedicationInstruction: false,
@@ -27,6 +28,7 @@ const interpreted: InterpretedQuestion = {
   englishSearchQuery: 'why is an immobilisation mask used during radiation therapy',
   category: 'planning',
   treatmentAreas: ['head_neck'],
+  treatmentAreaConfidence: 0.95,
   keyTerms: ['mask', 'immobilisation'],
   isOutsideScope: false,
 }

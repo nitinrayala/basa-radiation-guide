@@ -29,12 +29,15 @@ export const treatmentAreas = [
 
 export type TreatmentArea = (typeof treatmentAreas)[number]
 
+export type Specificity = 'general' | 'treatment_specific'
+
 export interface KnowledgeChunk {
   id: string
   title: string
   content: string
   category: Category
   treatmentAreas: TreatmentArea[]
+  specificity: Specificity
   sourceFile: string
   sourceLocation?: string
   sourcePriority: number

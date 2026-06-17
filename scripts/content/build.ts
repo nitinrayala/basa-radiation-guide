@@ -163,13 +163,15 @@ function chunkSection(section: ExtractedSection): KnowledgeChunk[] {
   return chunks.map((content, chunkIndex) => {
     const title = cleanLine(section.title) || section.title
     const fullText = `${title}\n${content}`
+    const treatmentAreas = classifyTreatmentAreas(section.sourceFile, fullText)
 
     return {
       id: buildChunkId(section, chunkIndex),
       title,
       content,
       category: classifyCategory(section.sourceFile, fullText),
-      treatmentAreas: classifyTreatmentAreas(section.sourceFile, fullText),
+      treatmentAreas,
+      specificity: treatmentAreas.length === 1 && treatmentAreas[0] === 'general' ? 'general' : 'treatment_specific',
       sourceFile: section.sourceFile,
       sourceLocation: section.sourceLocation,
       sourcePriority: section.sourcePriority,

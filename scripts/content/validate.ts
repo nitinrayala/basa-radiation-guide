@@ -1,6 +1,6 @@
 import { access, readFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
-import { categories, treatmentAreas, type ExtractedCorpus, type KnowledgeChunk } from './schema'
+import { categories, specificityValues, treatmentAreas, type ExtractedCorpus, type KnowledgeChunk } from './schema'
 import { expectedSourceDocuments } from './sourceDocuments'
 import { extractedCorpusPath, knowledgeChunksPath, sourceDir } from './paths'
 import { getSourcePriority } from './classify'
@@ -8,6 +8,7 @@ import { getSourcePriority } from './classify'
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const categorySet = new Set<string>(categories)
 const treatmentAreaSet = new Set<string>(treatmentAreas)
+const specificitySet = new Set<string>(specificityValues)
 const expectedSourceSet = new Set<string>(expectedSourceDocuments)
 const badEncodingPattern = /[\u00c3\u00c2\ufffd]|\u00e0\u00b0|\u00e0\u00b1/u
 const decorativeArtifactPattern = /[\u{1f3ac}\u2705]|\bText overlay:|\bText on screen:|\bOptional Voiceover:|\bImage:|\bScene \d+/iu
@@ -134,6 +135,15 @@ function validateKnowledgeChunks(chunks: KnowledgeChunk[], corpus: ExtractedCorp
 
     if (chunk.treatmentAreas.length === 0) {
       throw new Error(`Chunk ${chunk.id} has no treatment areas.`)
+    }
+
+    if (!specificitySet.has(chunk.specificity)) {
+      throw new Error(`Chunk ${chunk.id} has invalid specificity: ${String(chunk.specificity)}`)
+    }
+
+    const expectedSpecificity = chunk.treatmentAreas.length === 1 && chunk.treatmentAreas[0] === 'general' ? 'general' : 'treatment_specific'
+    if (chunk.specificity !== expectedSpecificity) {
+      throw new Error(`Chunk ${chunk.id} has specificity ${chunk.specificity} but expected ${expectedSpecificity}.`)
     }
 
     for (const area of chunk.treatmentAreas) {

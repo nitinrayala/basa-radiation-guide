@@ -50,8 +50,14 @@ responseLanguage: "en" | "te"
 englishSearchQuery: string
 category: "overview" | "workflow" | "planning" | "technique" | "side_effect" | "precaution" | "nutrition" | "skin_care" | "oral_care" | "rehabilitation" | "follow_up" | "unknown"
 treatmentAreas: string[]
+treatmentAreaConfidence: number between 0 and 1
 keyTerms: string[]
 isOutsideScope: boolean
+
+Use treatmentAreaConfidence only for how clearly the patient or conversation states the treatment area.
+Use 0 when the area is unknown.
+Use below 0.7 when it is inferred weakly or only from a vague symptom.
+Use 0.7 or above only when the area is clearly stated, for example breast radiation, head and neck radiation, pelvic radiation, prostate, cervix, brain, lung or abdomen.
 
 Selected UI language: ${request.language}
 Action: ${request.action}
@@ -104,6 +110,8 @@ Answer-quality rules:
 - Give enough background for a patient who has never heard the term before.
 - Explain why something is done, what the patient may experience, and what happens next when the approved content supports it.
 - Make the answer feel freshly written for this exact question, not copied from source order.
+- Do not assume a cancer type, treatment area or treatment week unless the retrieved content and interpreted intent support it.
+- Do not use treatment-specific or medication instructions unless they are present in the approved content supplied to you.
 - If the approved content is thin, say that clearly instead of padding.
 - Do not include source filenames in the answer text.
 

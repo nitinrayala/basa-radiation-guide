@@ -36,6 +36,8 @@
   - [x] Added exact phrase, token, fuzzy, title, category, treatment-area and source-priority scoring.
   - [x] Added source-priority fallback results for empty lexical matches.
   - [x] Added focused retrieval tests for English, Telugu, Romanised Telugu, mixed-language, metadata boosts, fuzzy matching and fallback.
+  - [x] Added chunk specificity metadata and Worker-side retrieval gates for unknown, low-confidence and treatment-specific questions.
+  - [x] Excluded medication/specific-instruction chunks unless the treatment area is confidently matched.
 - [x] Phase 5: Build Cloudflare Worker and Gemini integration
   - [x] Implemented `POST /api/chat` in the Cloudflare Worker.
   - [x] Added request validation, CORS handling and JSON responses.

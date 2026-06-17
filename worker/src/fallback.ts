@@ -19,6 +19,7 @@ function defaultInterpreted(request: ChatRequest): InterpretedQuestion {
     englishSearchQuery: request.question,
     category: 'unknown',
     treatmentAreas: ['general'],
+    treatmentAreaConfidence: 0,
     keyTerms: [],
     isOutsideScope: false,
   }

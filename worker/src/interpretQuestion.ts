@@ -8,6 +8,7 @@ const defaultInterpretation = (request: ChatRequest): InterpretedQuestion => ({
   englishSearchQuery: request.question,
   category: 'unknown',
   treatmentAreas: [],
+  treatmentAreaConfidence: 0,
   keyTerms: [],
   isOutsideScope: false,
 })
@@ -33,6 +34,10 @@ function parseInterpretation(text: string, request: ChatRequest): InterpretedQue
     englishSearchQuery: typeof parsed.englishSearchQuery === 'string' && parsed.englishSearchQuery.trim() ? parsed.englishSearchQuery.trim() : fallback.englishSearchQuery,
     category: parsed.category ?? 'unknown',
     treatmentAreas: Array.isArray(parsed.treatmentAreas) ? parsed.treatmentAreas.filter((area): area is string => typeof area === 'string') : [],
+    treatmentAreaConfidence:
+      typeof parsed.treatmentAreaConfidence === 'number' && Number.isFinite(parsed.treatmentAreaConfidence)
+        ? Math.max(0, Math.min(1, parsed.treatmentAreaConfidence))
+        : fallback.treatmentAreaConfidence,
     keyTerms: Array.isArray(parsed.keyTerms) ? parsed.keyTerms.filter((term): term is string => typeof term === 'string') : [],
     isOutsideScope: parsed.isOutsideScope === true,
   }

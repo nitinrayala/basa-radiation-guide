@@ -7,6 +7,7 @@
     "treatmentAreas": [
       "prostate"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Counselling.docx",
     "sourceLocation": "Section 1",
     "sourcePriority": 3,
@@ -21,6 +22,7 @@
     "treatmentAreas": [
       "cervix"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Counselling.docx",
     "sourceLocation": "Section 2",
     "sourcePriority": 3,
@@ -35,6 +37,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Counselling.docx",
     "sourceLocation": "Section 3",
     "sourcePriority": 3,
@@ -50,6 +53,7 @@
       "breast",
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Counselling.docx",
     "sourceLocation": "Section 4",
     "sourcePriority": 3,
@@ -64,6 +68,7 @@
     "treatmentAreas": [
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Counselling.docx",
     "sourceLocation": "Section 5",
     "sourcePriority": 3,
@@ -78,6 +83,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Counselling.docx",
     "sourceLocation": "Section 6",
     "sourcePriority": 3,
@@ -92,6 +98,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "HEAD AND NECK INSTRUCTIONS FOR PATIENTS.docx",
     "sourceLocation": "Section 1",
     "sourcePriority": 1,
@@ -106,6 +113,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "HEAD AND NECK INSTRUCTIONS FOR PATIENTS.docx",
     "sourceLocation": "Section 2",
     "sourcePriority": 1,
@@ -120,6 +128,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "HEAD AND NECK INSTRUCTIONS FOR PATIENTS.docx",
     "sourceLocation": "Section 3",
     "sourcePriority": 1,
@@ -134,6 +143,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "HEAD AND NECK INSTRUCTIONS FOR PATIENTS.docx",
     "sourceLocation": "Section 4",
     "sourcePriority": 1,
@@ -148,6 +158,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "HEAD AND NECK INSTRUCTIONS FOR PATIENTS.docx",
     "sourceLocation": "Section 5",
     "sourcePriority": 1,
@@ -162,6 +173,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "HEAD AND NECK INSTRUCTIONS FOR PATIENTS.docx",
     "sourceLocation": "Section 6",
     "sourcePriority": 1,
@@ -177,6 +189,7 @@
       "head_neck",
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "HEAD AND NECK INSTRUCTIONS FOR PATIENTS.docx",
     "sourceLocation": "Section 7",
     "sourcePriority": 1,
@@ -191,6 +204,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 1",
     "sourcePriority": 4,
@@ -205,6 +219,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 2",
     "sourcePriority": 4,
@@ -219,6 +234,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 3",
     "sourcePriority": 4,
@@ -233,6 +249,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 4",
     "sourcePriority": 4,
@@ -247,6 +264,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 5",
     "sourcePriority": 4,
@@ -261,6 +279,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 6",
     "sourcePriority": 4,
@@ -275,6 +294,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 7",
     "sourcePriority": 4,
@@ -289,6 +309,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 8",
     "sourcePriority": 4,
@@ -303,6 +324,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 9",
     "sourcePriority": 4,
@@ -317,6 +339,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 10",
     "sourcePriority": 4,
@@ -331,6 +354,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 11",
     "sourcePriority": 4,
@@ -345,6 +369,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 12",
     "sourcePriority": 4,
@@ -359,6 +384,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 13",
     "sourcePriority": 4,
@@ -373,6 +399,7 @@
     "treatmentAreas": [
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 14",
     "sourcePriority": 4,
@@ -387,6 +414,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 15",
     "sourcePriority": 4,
@@ -401,6 +429,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 16",
     "sourcePriority": 4,
@@ -415,6 +444,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 17",
     "sourcePriority": 4,
@@ -429,6 +459,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 18",
     "sourcePriority": 4,
@@ -443,6 +474,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 19",
     "sourcePriority": 4,
@@ -457,6 +489,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 20",
     "sourcePriority": 4,
@@ -471,6 +504,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 21",
     "sourcePriority": 4,
@@ -485,6 +519,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 22",
     "sourcePriority": 4,
@@ -499,6 +534,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 23",
     "sourcePriority": 4,
@@ -514,6 +550,7 @@
       "brain",
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 24",
     "sourcePriority": 4,
@@ -530,6 +567,7 @@
       "abdomen",
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 25",
     "sourcePriority": 4,
@@ -546,6 +584,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 26",
     "sourcePriority": 4,
@@ -560,6 +599,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 27",
     "sourcePriority": 4,
@@ -575,6 +615,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 28",
     "sourcePriority": 4,
@@ -592,6 +633,7 @@
       "prostate",
       "cervix"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 29",
     "sourcePriority": 4,
@@ -606,6 +648,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 30",
     "sourcePriority": 4,
@@ -620,6 +663,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 31",
     "sourcePriority": 4,
@@ -634,6 +678,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 32",
     "sourcePriority": 4,
@@ -650,6 +695,7 @@
       "prostate",
       "cervix"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 33",
     "sourcePriority": 4,
@@ -664,6 +710,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 34",
     "sourcePriority": 4,
@@ -680,6 +727,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 35",
     "sourcePriority": 4,
@@ -694,6 +742,7 @@
     "treatmentAreas": [
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 36",
     "sourcePriority": 4,
@@ -709,6 +758,7 @@
       "head_neck",
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 37",
     "sourcePriority": 4,
@@ -723,6 +773,7 @@
     "treatmentAreas": [
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 38",
     "sourcePriority": 4,
@@ -737,6 +788,7 @@
     "treatmentAreas": [
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 39",
     "sourcePriority": 4,
@@ -752,6 +804,7 @@
       "brain",
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 40",
     "sourcePriority": 4,
@@ -766,6 +819,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 41",
     "sourcePriority": 4,
@@ -780,6 +834,7 @@
     "treatmentAreas": [
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 42",
     "sourcePriority": 4,
@@ -794,6 +849,7 @@
     "treatmentAreas": [
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 43",
     "sourcePriority": 4,
@@ -808,6 +864,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 44",
     "sourcePriority": 4,
@@ -822,6 +879,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 45",
     "sourcePriority": 4,
@@ -836,6 +894,7 @@
     "treatmentAreas": [
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 46",
     "sourcePriority": 4,
@@ -851,6 +910,7 @@
       "prostate",
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 47",
     "sourcePriority": 4,
@@ -865,6 +925,7 @@
     "treatmentAreas": [
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 48",
     "sourcePriority": 4,
@@ -880,6 +941,7 @@
       "brain",
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation Planning-ChatBot.docx",
     "sourceLocation": "Section 49",
     "sourcePriority": 4,
@@ -894,6 +956,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 1",
     "sourcePriority": 5,
@@ -908,6 +971,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 2",
     "sourcePriority": 5,
@@ -922,6 +986,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 3",
     "sourcePriority": 5,
@@ -936,6 +1001,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 4",
     "sourcePriority": 5,
@@ -951,6 +1017,7 @@
       "brain",
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 5",
     "sourcePriority": 5,
@@ -967,6 +1034,7 @@
       "abdomen",
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 6",
     "sourcePriority": 5,
@@ -983,6 +1051,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 7",
     "sourcePriority": 5,
@@ -997,6 +1066,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 8",
     "sourcePriority": 5,
@@ -1012,6 +1082,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 9",
     "sourcePriority": 5,
@@ -1029,6 +1100,7 @@
       "prostate",
       "cervix"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 10",
     "sourcePriority": 5,
@@ -1043,6 +1115,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 11",
     "sourcePriority": 5,
@@ -1057,6 +1130,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 12",
     "sourcePriority": 5,
@@ -1071,6 +1145,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 13",
     "sourcePriority": 5,
@@ -1087,6 +1162,7 @@
       "prostate",
       "cervix"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 14",
     "sourcePriority": 5,
@@ -1101,6 +1177,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 15",
     "sourcePriority": 5,
@@ -1117,6 +1194,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 16",
     "sourcePriority": 5,
@@ -1131,6 +1209,7 @@
     "treatmentAreas": [
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 17",
     "sourcePriority": 5,
@@ -1146,6 +1225,7 @@
       "head_neck",
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 18",
     "sourcePriority": 5,
@@ -1160,6 +1240,7 @@
     "treatmentAreas": [
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 19",
     "sourcePriority": 5,
@@ -1174,6 +1255,7 @@
     "treatmentAreas": [
       "brain"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 20",
     "sourcePriority": 5,
@@ -1189,6 +1271,7 @@
       "brain",
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 21",
     "sourcePriority": 5,
@@ -1203,6 +1286,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 22",
     "sourcePriority": 5,
@@ -1217,6 +1301,7 @@
     "treatmentAreas": [
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 23",
     "sourcePriority": 5,
@@ -1231,6 +1316,7 @@
     "treatmentAreas": [
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 24",
     "sourcePriority": 5,
@@ -1245,6 +1331,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 25",
     "sourcePriority": 5,
@@ -1259,6 +1346,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 26",
     "sourcePriority": 5,
@@ -1273,6 +1361,7 @@
     "treatmentAreas": [
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 27",
     "sourcePriority": 5,
@@ -1288,6 +1377,7 @@
       "prostate",
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 28",
     "sourcePriority": 5,
@@ -1302,6 +1392,7 @@
     "treatmentAreas": [
       "bone_spine"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 29",
     "sourcePriority": 5,
@@ -1317,6 +1408,7 @@
       "brain",
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "Radiation therapy Techniques.docx",
     "sourceLocation": "Section 30",
     "sourcePriority": 5,
@@ -1331,6 +1423,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "Radiation Therapy Workflow.docx",
     "sourceLocation": "Section 1",
     "sourcePriority": 6,
@@ -1345,6 +1438,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 1",
     "sourcePriority": 2,
@@ -1359,6 +1453,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 2",
     "sourcePriority": 2,
@@ -1373,6 +1468,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 3",
     "sourcePriority": 2,
@@ -1387,6 +1483,7 @@
     "treatmentAreas": [
       "breast"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 4",
     "sourcePriority": 2,
@@ -1402,6 +1499,7 @@
       "head_neck",
       "breast"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 5",
     "sourcePriority": 2,
@@ -1416,6 +1514,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 6",
     "sourcePriority": 2,
@@ -1430,6 +1529,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 7",
     "sourcePriority": 2,
@@ -1445,6 +1545,7 @@
       "head_neck",
       "breast"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 8",
     "sourcePriority": 2,
@@ -1460,6 +1561,7 @@
       "head_neck",
       "breast"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 9",
     "sourcePriority": 2,
@@ -1474,6 +1576,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 10",
     "sourcePriority": 2,
@@ -1488,6 +1591,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 11",
     "sourcePriority": 2,
@@ -1502,6 +1606,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 12",
     "sourcePriority": 2,
@@ -1516,6 +1621,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 13",
     "sourcePriority": 2,
@@ -1530,6 +1636,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 14",
     "sourcePriority": 2,
@@ -1544,6 +1651,7 @@
     "treatmentAreas": [
       "head_neck"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 15",
     "sourcePriority": 2,
@@ -1558,6 +1666,7 @@
     "treatmentAreas": [
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 16",
     "sourcePriority": 2,
@@ -1572,6 +1681,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 17",
     "sourcePriority": 2,
@@ -1587,6 +1697,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 18",
     "sourcePriority": 2,
@@ -1601,6 +1712,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 19",
     "sourcePriority": 2,
@@ -1616,6 +1728,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 20",
     "sourcePriority": 2,
@@ -1631,6 +1744,7 @@
       "abdomen",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 21",
     "sourcePriority": 2,
@@ -1645,6 +1759,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 22",
     "sourcePriority": 2,
@@ -1659,6 +1774,7 @@
     "treatmentAreas": [
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 23",
     "sourcePriority": 2,
@@ -1673,6 +1789,7 @@
     "treatmentAreas": [
       "abdomen"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 24",
     "sourcePriority": 2,
@@ -1687,6 +1804,7 @@
     "treatmentAreas": [
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 25",
     "sourcePriority": 2,
@@ -1701,6 +1819,7 @@
     "treatmentAreas": [
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 26",
     "sourcePriority": 2,
@@ -1715,6 +1834,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 27",
     "sourcePriority": 2,
@@ -1730,6 +1850,7 @@
       "head_neck",
       "thorax_lung"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 28",
     "sourcePriority": 2,
@@ -1744,6 +1865,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 29",
     "sourcePriority": 2,
@@ -1758,6 +1880,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 30",
     "sourcePriority": 2,
@@ -1775,6 +1898,7 @@
       "thorax_lung",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 31",
     "sourcePriority": 2,
@@ -1789,6 +1913,7 @@
     "treatmentAreas": [
       "general"
     ],
+    "specificity": "general",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 32",
     "sourcePriority": 2,
@@ -1806,6 +1931,7 @@
       "thorax_lung",
       "pelvis"
     ],
+    "specificity": "treatment_specific",
     "sourceFile": "RT - Side effects.docx",
     "sourceLocation": "Section 33",
     "sourcePriority": 2,
