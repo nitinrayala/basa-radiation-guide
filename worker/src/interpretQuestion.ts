@@ -1,4 +1,4 @@
-import { createGeminiContent } from './gemini'
+import { createGroqChatCompletion } from './groq'
 import { buildInterpretPrompt } from './prompts'
 import type { ChatRequest, Env, InterpretedQuestion } from './schemas'
 
@@ -44,17 +44,18 @@ function parseInterpretation(text: string, request: ChatRequest): InterpretedQue
 }
 
 export async function interpretQuestion(request: ChatRequest, env: Env): Promise<InterpretedQuestion> {
-  if (!env.GEMINI_API_KEY) {
+  if (!env.GROQ_API_KEY) {
     return defaultInterpretation(request)
   }
 
   try {
-    const text = await createGeminiContent(env.GEMINI_API_KEY, {
-      model: env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
-      messages: [{ role: 'user', text: buildInterpretPrompt(request) }],
+    const text = await createGroqChatCompletion(env.GROQ_API_KEY, {
+      model: env.GROQ_MODEL || 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: buildInterpretPrompt(request) }],
       temperature: 0,
       maxOutputTokens: 180,
-      responseMimeType: 'application/json',
+      topP: 1,
+      responseFormat: 'json_object',
     })
 
     return parseInterpretation(text, request)

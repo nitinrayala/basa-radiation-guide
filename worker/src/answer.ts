@@ -1,4 +1,4 @@
-import { createGeminiContent } from './gemini'
+import { createGroqChatCompletion } from './groq'
 import { answerSystemPrompt, buildAnswerPrompt } from './prompts'
 import { buildFollowUpSuggestions, ensureExplainMoreSuggestion } from './suggestions'
 import type { KnowledgeChunk } from '../../src/features/retrieval/retrievalTypes'
@@ -97,15 +97,16 @@ async function createAnswerCompletion(
 ): Promise<string> {
   const maxOutputTokens = request.action === 'explain_more' ? env.MAX_OUTPUT_TOKENS_EXPANDED : env.MAX_OUTPUT_TOKENS_NORMAL
 
-  return createGeminiContent(apiKey, {
-    model: env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
+  return createGroqChatCompletion(apiKey, {
+    model: env.GROQ_MODEL || 'llama-3.1-8b-instant',
     systemInstruction: answerSystemPrompt,
     messages: [
-      { role: 'user', text: buildAnswerPrompt(request, interpreted, chunks) },
+      { role: 'user', content: buildAnswerPrompt(request, interpreted, chunks) },
     ],
-    temperature: 0.2,
+    temperature: 1,
     maxOutputTokens: Number.parseInt(maxOutputTokens || '', 10) || (request.action === 'explain_more' ? 1400 : 850),
-    responseMimeType: 'application/json',
+    topP: 1,
+    responseFormat: 'json_object',
   })
 }
 
@@ -115,16 +116,16 @@ export async function generateAnswer(
   chunks: KnowledgeChunk[],
   env: Env,
 ): Promise<ChatAnswer> {
-  if (!env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not configured.')
+  if (!env.GROQ_API_KEY) {
+    throw new Error('GROQ_API_KEY is not configured.')
   }
 
   let text: string
   try {
-    text = await createAnswerCompletion(env.GEMINI_API_KEY, request, interpreted, chunks, env)
+    text = await createAnswerCompletion(env.GROQ_API_KEY, request, interpreted, chunks, env)
   } catch {
     await sleep(250)
-    text = await createAnswerCompletion(env.GEMINI_API_KEY, request, interpreted, chunks, env)
+    text = await createAnswerCompletion(env.GROQ_API_KEY, request, interpreted, chunks, env)
   }
 
   return parseChatAnswer(text, request, interpreted, chunks)

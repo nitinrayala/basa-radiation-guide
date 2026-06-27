@@ -38,15 +38,15 @@
   - [x] Added focused retrieval tests for English, Telugu, Romanised Telugu, mixed-language, metadata boosts, fuzzy matching and fallback.
   - [x] Added chunk specificity metadata and Worker-side retrieval gates for unknown, low-confidence and treatment-specific questions.
   - [x] Excluded medication/specific-instruction chunks unless the treatment area is confidently matched.
-- [x] Phase 5: Build Cloudflare Worker and Gemini integration
+- [x] Phase 5: Build Cloudflare Worker and Groq integration
   - [x] Implemented `POST /api/chat` in the Cloudflare Worker.
   - [x] Added request validation, CORS handling and JSON responses.
-  - [x] Added Gemini REST integration using the server-side `GEMINI_API_KEY` secret.
-  - [x] Switched the Worker model provider from Groq back to Gemini.
+  - [x] Added Groq REST integration using the server-side `GROQ_API_KEY` secret.
+  - [x] Switched the Worker model provider to Groq.
   - [x] Added compact question interpretation and document-grounded answer generation calls.
-  - [x] Reused local retrieval so Gemini receives only relevant approved chunks.
-  - [x] Added safe fallback behavior when Gemini is not configured or unavailable.
-  - [x] Added Worker tests with mocked Gemini responses.
+  - [x] Reused local retrieval so Groq receives only relevant approved chunks.
+  - [x] Added safe fallback behavior when Groq is not configured or unavailable.
+  - [x] Added Worker tests with mocked Groq responses.
   - [x] Verified Worker bundling with `wrangler deploy --dry-run`.
 - [x] Phase 6: Add English/Telugu and mixed-language handling
   - [x] Wired the frontend chat client to call the configured Cloudflare Worker.
@@ -60,21 +60,21 @@
   - [x] Added topic-aware follow-up suggestion generation for planning, workflow, side effects, skin care, oral care, nutrition, rehabilitation and head/neck mask topics.
   - [x] Ensured every answer path includes an Explain More suggestion.
   - [x] Updated Explain More prompting to expand previous context instead of repeating the same answer.
-  - [x] Made fallback answers return relevant follow-up suggestions when Gemini is unavailable.
+  - [x] Made fallback answers return relevant follow-up suggestions when Groq is unavailable.
   - [x] Made frontend suggestion clicks use the structured `question` field when present.
   - [x] Cleaned Telugu mock-mode suggestions and Explain More text.
   - [x] Added Worker tests for English and Telugu suggestion behavior.
-  - [x] Improved answer-generation instructions so Gemini restructures retrieved content into clearer patient-friendly explanations.
+  - [x] Improved answer-generation instructions so Groq restructures retrieved content into clearer patient-friendly explanations.
   - [x] Prioritized curated topic-aware suggestions before model-generated suggestions.
   - [x] Refined mask, planning and side-effect follow-ups to sound more conversational.
   - [x] Increased normal and Explain More answer depth so responses include patient-friendly context instead of overly short summaries.
 - [x] Phase 8: Add fallbacks and safety validation
-  - [x] Added a Worker-side safety classifier before retrieval and Gemini answer generation.
+  - [x] Added a Worker-side safety classifier before retrieval and Groq answer generation.
   - [x] Blocked diagnosis/report interpretation, treatment-technique recommendations, medication changes, stopping/skipping treatment, dose/session advice, survival predictions and unrelated topics.
   - [x] Returned controlled doctor-discussion responses with safe follow-up suggestions for blocked questions.
-  - [x] Treated Gemini interpretation `isOutsideScope` as a controlled safety response.
+  - [x] Treated Groq interpretation `isOutsideScope` as a controlled safety response.
   - [x] Added one retry for answer-generation failures before fallback.
-  - [x] Allowed useful non-JSON Gemini answers to be used instead of over-triggering fallback.
+  - [x] Allowed useful non-JSON Groq answers to be used instead of over-triggering fallback.
   - [x] Improved fallback answer formatting and fixed Telugu fallback strings.
   - [x] Added Worker regression tests for safety and fallback behavior.
 - [x] Phase 9: Add tests
@@ -93,15 +93,15 @@
   - [x] Updated Worker local environment example to use `ALLOWED_ORIGINS`.
   - [x] Added deployment configuration tests for Pages assets, Worker URL and workflow artifact publishing.
 - [x] Phase 11: Final validation and documentation
-  - [x] Replaced the README with current architecture, setup, content pipeline, retrieval, Gemini, safety, fallback, deployment, testing and document-update instructions.
+  - [x] Replaced the README with current architecture, setup, content pipeline, retrieval, Groq, safety, fallback, deployment, testing and document-update instructions.
   - [x] Documented mock mode, Worker secrets, GitHub Pages deployment and privacy limitations.
   - [x] Ran lint, typecheck, test, content validation and production build successfully.
   - [x] Deployed the final Worker update.
 - [x] Architecture refactor: cached guided journey with optional AI search
   - [x] Replaced multiple frontend suggested-question buttons with exactly one guided next-step button.
   - [x] Added `src/content/radiationJourney.ts` with 13 cached English/Telugu radiation-process stages.
-  - [x] Made guided button clicks add cached local question/answer messages without calling Gemini or the Worker.
-  - [x] Kept typed patient doubts on the existing Worker/Gemini retrieval path.
+  - [x] Made guided button clicks add cached local question/answer messages without calling Groq or the Worker.
+  - [x] Kept typed patient doubts on the existing Worker/Groq retrieval path.
   - [x] Kept typed questions separate from guided progress so search does not advance the journey.
   - [x] Added localStorage persistence for selected language and separate English/Telugu guided journey progress.
   - [x] Added restart behavior that clears guided journey messages and keeps the selected language.
@@ -111,3 +111,13 @@
   - [x] Isolated visible English and Telugu chat timelines so typed search messages do not bleed across language switches.
   - [x] Updated frontend tests for one guided button, cached answers, restart, language switching and mobile widths.
   - [x] Updated README and PROJECT_SPEC with the guided-journey-first architecture.
+- [x] Provider update: use Groq API key
+  - [x] Replaced the previous Worker model adapter with a Groq chat-completions adapter.
+  - [x] Updated Worker environment names to `GROQ_API_KEY` and `GROQ_MODEL`.
+  - [x] Updated Wrangler config, local env example, README, frontend mock copy and Worker tests.
+  - [x] Verified lint, typecheck, tests, content validation and build pass.
+- [x] Provider update: use `llama-3.1-8b-instant`
+  - [x] Confirmed the Worker was briefly configured for `llama-3.3-70b-versatile`.
+  - [x] Updated Worker defaults, Wrangler config, local env example and README to `llama-3.1-8b-instant`.
+  - [x] Aligned the Groq request body with `max_completion_tokens` and `top_p`.
+  - [x] Kept Worker chat responses non-streaming so structured answer validation can complete before replying to the frontend.

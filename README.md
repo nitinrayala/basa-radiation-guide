@@ -2,7 +2,7 @@
 
 Mobile-first English and Telugu radiation therapy guide with optional AI search.
 
-The app guides patients through the general radiation therapy process step by step using cached, document-based explanations. Patients can also type specific doubts at any time; typed questions use document retrieval plus the Cloudflare Worker/Gemini answer flow.
+The app guides patients through the general radiation therapy process step by step using cached, document-based explanations. Patients can also type specific doubts at any time; typed questions use document retrieval plus the Cloudflare Worker/Groq answer flow.
 
 Live frontend:
 
@@ -22,9 +22,9 @@ https://basa-radiation-guide-api.botradiation.workers.dev/api/chat
 - English and Telugu UI.
 - A cached guided radiation journey that works without an API key or live AI provider.
 - Supports English, Telugu script, Romanised Telugu and mixed Telugu-English questions.
-- Uses local document retrieval plus Gemini only for typed patient doubts.
+- Uses local document retrieval plus Groq only for typed patient doubts.
 - Hosted as static frontend files on GitHub Pages.
-- Uses a Cloudflare Worker for retrieval, safety checks and Gemini calls.
+- Uses a Cloudflare Worker for retrieval, safety checks and Groq calls.
 
 ## What This Is Not
 
@@ -96,7 +96,7 @@ Romanised Telugu examples such as `enduku`, `eppudu`, `noppi`, `manta`, `tindi`,
 Before scoring, the Worker applies a small metadata gate:
 
 - chunks are tagged as `general` or `treatment_specific`
-- Gemini returns a treatment-area confidence score
+- Groq returns a treatment-area confidence score
 - unknown or low-confidence treatment area questions use only general non-medication chunks
 - clear treatment-area questions can use general chunks plus matching treatment-specific chunks
 - medication or specific-instruction chunks require a clear matching treatment area
@@ -143,15 +143,15 @@ These browser values do not expire on a timer. They remain until the user clears
 
 Typed patient questions use the Worker. The current Worker uses two stages:
 
-1. **Interpretation:** Gemini converts the patient question into compact retrieval metadata.
-2. **Answer generation:** the Worker retrieves relevant chunks and sends only those chunks, the interpreted intent and recent history to Gemini.
+1. **Interpretation:** Groq converts the patient question into compact retrieval metadata.
+2. **Answer generation:** the Worker retrieves relevant chunks and sends only those chunks, the interpreted intent and recent history to Groq.
 
-The frontend never calls Gemini directly and never contains the Gemini API key.
+The frontend never calls Groq directly and never contains the Groq API key.
 
 Configured model:
 
 ```text
-gemini-2.5-flash-lite
+llama-3.1-8b-instant
 ```
 
 ## Safety Behavior
@@ -181,12 +181,12 @@ Typed questions do not advance or reset the guided journey stage. The single gui
 
 ## Fallbacks
 
-If Gemini fails:
+If Groq fails:
 
 - the Worker retries answer generation once
-- if Gemini returns useful non-JSON text, the Worker can still use it safely
+- if Groq returns useful non-JSON text, the Worker can still use it safely
 - otherwise it returns a short unavailable message instead of dumping raw document chunks
-- the guided journey still works because cached journey answers do not depend on Gemini
+- the guided journey still works because cached journey answers do not depend on Groq
 - the current guided button remains visible
 
 ## Local Development
@@ -225,7 +225,7 @@ VITE_USE_MOCK_CHAT=false
 
 ## Mock Mode
 
-Mock frontend mode avoids Worker/Gemini calls:
+Mock frontend mode avoids Worker/Groq calls:
 
 ```text
 VITE_USE_MOCK_CHAT=true
@@ -238,8 +238,8 @@ Tests automatically use mock chat mode.
 Copy `worker/.dev.vars.example` to `worker/.dev.vars`:
 
 ```text
-GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.5-flash-lite
+GROQ_API_KEY=
+GROQ_MODEL=llama-3.1-8b-instant
 ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 MAX_OUTPUT_TOKENS_NORMAL=850
 MAX_OUTPUT_TOKENS_EXPANDED=1400
@@ -252,10 +252,10 @@ Run the Worker locally:
 npm run worker:dev
 ```
 
-Set the deployed Gemini secret:
+Set the deployed Groq secret:
 
 ```bash
-npx wrangler secret put GEMINI_API_KEY --config worker/wrangler.toml
+npx wrangler secret put GROQ_API_KEY --config worker/wrangler.toml
 ```
 
 Deploy the Worker:
@@ -314,7 +314,7 @@ Current test coverage includes:
 - safety guardrails
 - cached guided journey behavior
 - typed questions staying independent from journey progress
-- Worker Gemini/fallback behavior
+- Worker Groq/fallback behavior
 - frontend chat behavior
 - deployment configuration
 
@@ -339,7 +339,7 @@ npm run content:validate
 - The Worker sends only retrieved chunks, not all documents.
 - Only the latest six history messages are retained.
 - Normal and expanded answer token limits are configurable.
-- Safety-blocked questions do not call Gemini.
+- Safety-blocked questions do not call Groq.
 
 Typical limits are controlled by:
 
@@ -356,6 +356,6 @@ The UI tells users not to enter names, phone numbers, hospital numbers or report
 ## Known Limitations
 
 - PPTX files currently have no extractable slide text without OCR.
-- Telugu quality depends on the Gemini model output and the source material.
+- Telugu quality depends on the Groq model output and the source material.
 - The bot is informational only and should not replace the treating doctor.
-- Gemini rate/token limits can affect live usage.
+- Groq rate/token limits can affect live usage.

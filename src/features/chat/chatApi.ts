@@ -12,9 +12,9 @@ const mockAnswers: Record<Language, string> = {
 
 const mockExpandedAnswers: Record<Language, string> = {
   en:
-    'Here is a little more detail in this mock preview:\n\n- Guided journey questions use cached local answers.\n- Typed questions go to the Worker.\n- The Worker retrieves approved document chunks before asking Gemini for an answer.',
+    'Here is a little more detail in this mock preview:\n\n- Guided journey questions use cached local answers.\n- Typed questions go to the Worker.\n- The Worker retrieves approved document chunks before asking Groq for an answer.',
   te:
-    'ఈ మాక్ ప్రివ్యూలో కొంచెం ఎక్కువ వివరంగా:\n\n- గైడ్ ప్రశ్నలకు స్థానికంగా నిల్వ చేసిన సమాధానాలు ఉపయోగిస్తాయి.\n- టైప్ చేసిన ప్రశ్నలు Worker‌కు వెళ్తాయి.\n- Gemini సమాధానం ఇవ్వడానికి ముందు Worker ఆమోదించిన పత్ర భాగాలను వెతుకుతుంది.',
+    'ఈ మాక్ ప్రివ్యూలో కొంచెం ఎక్కువ వివరంగా:\n\n- గైడ్ ప్రశ్నలకు స్థానికంగా నిల్వ చేసిన సమాధానాలు ఉపయోగిస్తాయి.\n- టైప్ చేసిన ప్రశ్నలు Worker‌కు వెళ్తాయి.\n- Groq సమాధానం ఇవ్వడానికి ముందు Worker ఆమోదించిన పత్ర భాగాలను వెతుకుతుంది.',
 }
 
 const explainMoreSuggestion: Record<Language, Suggestion> = {

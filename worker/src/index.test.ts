@@ -3,7 +3,7 @@ import type { Env } from './schemas'
 
 const baseEnv: Env = {
   ALLOWED_ORIGINS: 'https://nitinrayala.github.io,http://localhost:5173',
-  GEMINI_MODEL: 'gemini-2.5-flash-lite',
+  GROQ_MODEL: 'llama-3.1-8b-instant',
   MAX_HISTORY_MESSAGES: '6',
   MAX_OUTPUT_TOKENS_NORMAL: '850',
   MAX_OUTPUT_TOKENS_EXPANDED: '1400',
@@ -46,7 +46,7 @@ describe('Cloudflare Worker chat API', () => {
     expect(response.headers.get('access-control-allow-origin')).toBe('https://nitinrayala.github.io')
   })
 
-  it('returns local fallback when Gemini is not configured', async () => {
+  it('returns local fallback when Groq is not configured', async () => {
     const response = await worker.fetch(chatRequest({ language: 'en', question: 'Why is a mask used during radiation?' }), baseEnv)
     const json = (await response.json()) as { answer: string; suggestions: Array<{ label: string; action: string }>; sources: Array<{ id: string }> }
 
@@ -58,16 +58,15 @@ describe('Cloudflare Worker chat API', () => {
     expect(json.sources).toEqual([])
   })
 
-  it('calls Gemini interpretation and answer generation when configured', async () => {
+  it('calls Groq interpretation and answer generation when configured', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
         Response.json({
-          candidates: [
+          choices: [
             {
-              content: {
-                parts: [{
-                  text: JSON.stringify({
+              message: {
+                content: JSON.stringify({
                   detectedLanguage: 'en',
                   responseLanguage: 'en',
                   englishSearchQuery: 'why is an immobilisation mask used during radiation therapy',
@@ -76,8 +75,7 @@ describe('Cloudflare Worker chat API', () => {
                   treatmentAreaConfidence: 0.95,
                   keyTerms: ['mask', 'immobilisation'],
                   isOutsideScope: false,
-                  }),
-                }],
+                }),
               },
             },
           ],
@@ -85,17 +83,15 @@ describe('Cloudflare Worker chat API', () => {
       )
       .mockResolvedValueOnce(
         Response.json({
-          candidates: [
+          choices: [
             {
-              content: {
-                parts: [{
-                  text: JSON.stringify({
+              message: {
+                content: JSON.stringify({
                   answer: 'A mask helps keep the treatment position consistent.',
                   suggestions: [{ id: 'explain-more', label: 'Explain more', action: 'explain_more' }],
                   sourceIds: ['planning-2-immobilization-radiation-planning-chatbot-005-01'],
                   needsDoctorDiscussion: false,
-                  }),
-                }],
+                }),
               },
             },
           ],
@@ -106,7 +102,7 @@ describe('Cloudflare Worker chat API', () => {
 
     const response = await worker.fetch(
       chatRequest({ language: 'en', question: 'Why is a mask used during radiation?' }),
-      { ...baseEnv, GEMINI_API_KEY: 'test-key' },
+      { ...baseEnv, GROQ_API_KEY: 'test-key' },
     )
     const json = (await response.json()) as { answer: string; suggestions: Array<{ action: string }>; sources: Array<{ id: string }> }
 
@@ -116,18 +112,28 @@ describe('Cloudflare Worker chat API', () => {
     expect(json.suggestions.length).toBeGreaterThanOrEqual(3)
     expect(json.sources[0]?.id).toBe('planning-2-immobilization-radiation-planning-chatbot-005-01')
     expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+      model: 'llama-3.1-8b-instant',
+      max_completion_tokens: 180,
+      top_p: 1,
+    })
+    expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toMatchObject({
+      model: 'llama-3.1-8b-instant',
+      max_completion_tokens: 850,
+      temperature: 1,
+      top_p: 1,
+    })
   })
 
-  it('uses a non-JSON Gemini answer instead of showing the fallback message', async () => {
+  it('uses a non-JSON Groq answer instead of showing the fallback message', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
         Response.json({
-          candidates: [
+          choices: [
             {
-              content: {
-                parts: [{
-                  text: JSON.stringify({
+              message: {
+                content: JSON.stringify({
                   detectedLanguage: 'en',
                   responseLanguage: 'en',
                   englishSearchQuery: 'planning scan radiation therapy',
@@ -136,8 +142,7 @@ describe('Cloudflare Worker chat API', () => {
                   treatmentAreaConfidence: 0,
                   keyTerms: ['planning', 'scan'],
                   isOutsideScope: false,
-                  }),
-                }],
+                }),
               },
             },
           ],
@@ -145,12 +150,10 @@ describe('Cloudflare Worker chat API', () => {
       )
       .mockResolvedValueOnce(
         Response.json({
-          candidates: [
+          choices: [
             {
-              content: {
-                parts: [{
-                  text: 'A planning scan helps the team prepare your treatment position and plan.',
-                }],
+              message: {
+                content: 'A planning scan helps the team prepare your treatment position and plan.',
               },
             },
           ],
@@ -161,7 +164,7 @@ describe('Cloudflare Worker chat API', () => {
 
     const response = await worker.fetch(
       chatRequest({ language: 'en', question: 'What happens during a planning scan?' }),
-      { ...baseEnv, GEMINI_API_KEY: 'test-key' },
+      { ...baseEnv, GROQ_API_KEY: 'test-key' },
     )
     const json = (await response.json()) as { answer: string; suggestions: Array<{ action: string }> }
 
@@ -189,11 +192,11 @@ describe('Cloudflare Worker chat API', () => {
     ['stopping treatment', 'Can I skip radiation treatment tomorrow?'],
     ['survival prediction', 'What is my chance of cure?'],
     ['outside scope', 'Who will win the cricket match?'],
-  ])('blocks unsafe or out-of-scope questions before Gemini: %s', async (_label, question) => {
+  ])('blocks unsafe or out-of-scope questions before Groq: %s', async (_label, question) => {
     const fetchMock = vi.fn<typeof fetch>()
     vi.stubGlobal('fetch', fetchMock)
 
-    const response = await worker.fetch(chatRequest({ language: 'en', question }), { ...baseEnv, GEMINI_API_KEY: 'test-key' })
+    const response = await worker.fetch(chatRequest({ language: 'en', question }), { ...baseEnv, GROQ_API_KEY: 'test-key' })
     const json = (await response.json()) as {
       answer: string
       needsDoctorDiscussion: boolean
