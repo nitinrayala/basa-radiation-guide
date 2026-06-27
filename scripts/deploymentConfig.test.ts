@@ -23,6 +23,20 @@ describe('deployment configuration', () => {
     expect(envProduction).not.toMatch(/GROQ_API_KEY/)
   })
 
+  it('configures Cloudflare Workers AI and Vectorize bindings for RAG', () => {
+    const wranglerConfig = readProjectFile('worker/wrangler.toml')
+    const packageJson = readProjectFile('package.json')
+
+    expect(wranglerConfig).toContain('[ai]')
+    expect(wranglerConfig).toContain('binding = "AI"')
+    expect(wranglerConfig).toContain('[[vectorize]]')
+    expect(wranglerConfig).toContain('binding = "VECTORIZE_INDEX"')
+    expect(wranglerConfig).toContain('index_name = "basa-radiation-guide"')
+    expect(wranglerConfig).toContain('EMBEDDING_MODEL = "@cf/baai/bge-base-en-v1.5"')
+    expect(packageJson).toContain('"content:ocr"')
+    expect(packageJson).toContain('"rag:index"')
+  })
+
   it('publishes GitHub Pages from the dist artifact', () => {
     const workflow = readProjectFile('.github/workflows/deploy-pages.yml')
 

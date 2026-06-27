@@ -22,9 +22,9 @@ https://basa-radiation-guide-api.botradiation.workers.dev/api/chat
 - English and Telugu UI.
 - A cached guided radiation journey that works without an API key or live AI provider.
 - Supports English, Telugu script, Romanised Telugu and mixed Telugu-English questions.
-- Uses local document retrieval plus Groq only for typed patient doubts.
+- Uses Cloudflare Vectorize plus local document retrieval for typed patient doubts.
 - Hosted as static frontend files on GitHub Pages.
-- Uses a Cloudflare Worker for retrieval, safety checks and Groq calls.
+- Uses a Cloudflare Worker for retrieval, safety checks, Workers AI embeddings, Vectorize search and Groq calls.
 
 ## What This Is Not
 
@@ -36,6 +36,7 @@ This is not a diagnostic, treatment-selection or appointment system. It must not
 source-docs/                 Approved medical source documents
 data/content/                Extracted corpus and structured chunks
 scripts/content/             DOCX/PPTX extraction, chunking and validation
+scripts/rag/                 Cloudflare Workers AI / Vectorize indexing
 src/                         React/Vite frontend
 src/content/radiationJourney.ts Cached English/Telugu guided journey
 src/features/retrieval/      Local retrieval engine
@@ -68,6 +69,7 @@ Extraction and validation are repeatable:
 
 ```bash
 npm run content:extract
+npm run content:ocr
 npm run content:build
 npm run content:validate
 ```
@@ -75,14 +77,25 @@ npm run content:validate
 Outputs:
 
 - `data/content/extracted-corpus.json`
+- `data/content/ocr-review.json`
 - `data/content/knowledge-chunks.json`
 - `src/data/knowledgeChunks.json`
 
 DOCX text is extracted with document metadata. PPTX files are inspected in slide order; the current supplied PPTX files contain no extractable slide text.
 
-## Retrieval
+`npm run content:ocr` discovers embedded images in DOCX/PPTX files and writes review candidates to `data/content/ocr-review.json`. The script does not trust image text automatically. Each candidate starts as `pending`; only entries changed to `approved` with reviewed `proposedText` or `rawOcrText` are added to generated chunks. Rejected and pending OCR candidates are excluded from the chatbot knowledge base.
 
-The local retrieval engine scores generated chunks using:
+## Retrieval And RAG Index
+
+The Worker uses hybrid RAG retrieval for typed questions:
+
+1. Groq interprets the question into compact English retrieval metadata.
+2. Workers AI embeds the interpreted search query.
+3. Cloudflare Vectorize returns semantic candidates.
+4. The local lexical/fuzzy retriever returns keyword candidates.
+5. The Worker merges, dedupes and reranks candidates before sending only the final retrieved chunks to Groq.
+
+The local retrieval engine remains available as fallback and scores generated chunks using:
 
 - normalized tokens
 - exact phrase matching
@@ -100,6 +113,27 @@ Before scoring, the Worker applies a small metadata gate:
 - unknown or low-confidence treatment area questions use only general non-medication chunks
 - clear treatment-area questions can use general chunks plus matching treatment-specific chunks
 - medication or specific-instruction chunks require a clear matching treatment area
+
+Create the Vectorize index before indexing:
+
+```bash
+npx wrangler vectorize create basa-radiation-guide --dimensions=768 --metric=cosine
+```
+
+Index generated chunks after content validation:
+
+```bash
+npm run rag:index
+```
+
+`rag:index` requires shell environment variables:
+
+```text
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+VECTORIZE_INDEX_NAME=basa-radiation-guide
+EMBEDDING_MODEL=@cf/baai/bge-base-en-v1.5
+```
 
 ## Guided Journey
 
@@ -141,10 +175,11 @@ These browser values do not expire on a timer. They remain until the user clears
 
 ## AI Search Flow
 
-Typed patient questions use the Worker. The current Worker uses two stages:
+Typed patient questions use the Worker. The current Worker uses a grounded RAG flow:
 
 1. **Interpretation:** Groq converts the patient question into compact retrieval metadata.
-2. **Answer generation:** the Worker retrieves relevant chunks and sends only those chunks, the interpreted intent and recent history to Groq.
+2. **Retrieval:** Workers AI and Vectorize retrieve semantic candidates, local lexical retrieval adds keyword candidates, and the Worker reranks the merged set.
+3. **Answer generation:** the Worker sends only those final chunks, the interpreted intent and recent history to Groq.
 
 The frontend never calls Groq directly and never contains the Groq API key.
 
@@ -181,8 +216,9 @@ Typed questions do not advance or reset the guided journey stage. The single gui
 
 ## Fallbacks
 
-If Groq fails:
+If retrieval or Groq fails:
 
+- if Workers AI or Vectorize fails, the Worker falls back to local lexical retrieval
 - the Worker retries answer generation once
 - if Groq returns useful non-JSON text, the Worker can still use it safely
 - otherwise it returns a short unavailable message instead of dumping raw document chunks
@@ -240,6 +276,7 @@ Copy `worker/.dev.vars.example` to `worker/.dev.vars`:
 ```text
 GROQ_API_KEY=
 GROQ_MODEL=llama-3.1-8b-instant
+EMBEDDING_MODEL=@cf/baai/bge-base-en-v1.5
 ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 MAX_OUTPUT_TOKENS_NORMAL=850
 MAX_OUTPUT_TOKENS_EXPANDED=1400
@@ -256,6 +293,17 @@ Set the deployed Groq secret:
 
 ```bash
 npx wrangler secret put GROQ_API_KEY --config worker/wrangler.toml
+```
+
+The Worker uses these Cloudflare bindings from `worker/wrangler.toml`:
+
+```toml
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "VECTORIZE_INDEX"
+index_name = "basa-radiation-guide"
 ```
 
 Deploy the Worker:
@@ -315,6 +363,8 @@ Current test coverage includes:
 - cached guided journey behavior
 - typed questions staying independent from journey progress
 - Worker Groq/fallback behavior
+- OCR review gating
+- Workers AI / Vectorize hybrid retrieval behavior
 - frontend chat behavior
 - deployment configuration
 
@@ -325,21 +375,27 @@ Current test coverage includes:
 
 ```bash
 npm run content:extract
+npm run content:ocr
 npm run content:build
 npm run content:validate
+npm run rag:index
 ```
 
-3. Run the full validation gate.
-4. Deploy the Worker if generated knowledge chunks changed and are used by the API.
-5. Push to GitHub to redeploy the frontend if frontend/generated browser assets changed.
+3. Review `data/content/ocr-review.json`; approve only medically useful image text by setting `status` to `approved` and filling reviewed text.
+4. Re-run `npm run content:build`, `npm run content:validate` and `npm run rag:index`.
+5. Run the full validation gate.
+6. Deploy the Worker if generated knowledge chunks changed and are used by the API.
+7. Push to GitHub to redeploy the frontend if frontend/generated browser assets changed.
 
 ## Cost Controls
 
 - Interpretation output is small.
 - The Worker sends only retrieved chunks, not all documents.
+- Vectorize retrieves a small top-k candidate set before reranking.
 - Only the latest six history messages are retained.
 - Normal and expanded answer token limits are configurable.
 - Safety-blocked questions do not call Groq.
+- Safety-blocked questions do not call Workers AI or Vectorize.
 
 Typical limits are controlled by:
 
@@ -355,7 +411,8 @@ The UI tells users not to enter names, phone numbers, hospital numbers or report
 
 ## Known Limitations
 
-- PPTX files currently have no extractable slide text without OCR.
+- OCR candidates require manual review before they can enter the knowledge base.
+- Vectorize indexing requires Cloudflare credentials and must be rerun after chunk changes.
 - Telugu quality depends on the Groq model output and the source material.
 - The bot is informational only and should not replace the treating doctor.
 - Groq rate/token limits can affect live usage.

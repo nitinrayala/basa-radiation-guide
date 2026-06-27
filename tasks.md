@@ -121,3 +121,14 @@
   - [x] Updated Worker defaults, Wrangler config, local env example and README to `llama-3.1-8b-instant`.
   - [x] Aligned the Groq request body with `max_completion_tokens` and `top_p`.
   - [x] Kept Worker chat responses non-streaming so structured answer validation can complete before replying to the frontend.
+- [x] RAG upgrade: Cloudflare Vectorize with reviewed OCR
+  - [x] Added `plan.md` with the approved RAG/OCR implementation plan.
+  - [x] Added review-gated OCR candidate generation in `data/content/ocr-review.json`.
+  - [x] Ran OCR over embedded DOCX/PPTX images and auto-reviewed the extracted text conservatively.
+  - [x] Rebuilt generated knowledge chunks with 56 approved OCR-derived sections.
+  - [x] Added `contentSource` and approved OCR metadata to generated knowledge chunks.
+  - [x] Added Cloudflare Workers AI and Vectorize bindings to the Worker config.
+  - [x] Added hybrid retrieval that merges Vectorize matches with local lexical/fuzzy retrieval.
+  - [x] Kept lexical retrieval as fallback when Workers AI or Vectorize is unavailable.
+  - [x] Added `rag:index` for hosted Workers AI embedding and Vectorize upsert.
+  - [x] Added tests for OCR gating, hybrid retrieval, safety prechecks and deployment config.

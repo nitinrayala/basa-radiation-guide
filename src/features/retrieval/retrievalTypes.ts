@@ -31,6 +31,8 @@ export type TreatmentArea = (typeof treatmentAreas)[number]
 
 export type Specificity = 'general' | 'treatment_specific'
 
+export type ContentSource = 'document_text' | 'ocr_reviewed'
+
 export interface KnowledgeChunk {
   id: string
   title: string
@@ -43,6 +45,8 @@ export interface KnowledgeChunk {
   sourcePriority: number
   containsMedicationInstruction: boolean
   requiresDoctorConfirmation: boolean
+  contentSource: ContentSource
+  reviewStatus?: 'approved'
 }
 
 export interface RetrievalQuery {

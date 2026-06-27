@@ -1,5 +1,5 @@
-import { retrieveForQuestion } from './retrieve'
-import type { InterpretedQuestion } from './schemas'
+import { retrieveForQuestion, retrieveHybridForQuestion } from './retrieve'
+import type { Env, InterpretedQuestion } from './schemas'
 
 function interpretedQuestion(overrides: Partial<InterpretedQuestion>): InterpretedQuestion {
   return {
@@ -66,5 +66,72 @@ describe('Worker retrieval filtering', () => {
 
     expect(results.every((result) => !result.chunk.containsMedicationInstruction)).toBe(true)
     expect(results.every((result) => result.chunk.specificity === 'general')).toBe(true)
+  })
+
+  it('merges Vectorize matches with lexical retrieval when bindings are configured', async () => {
+    const env: Env = {
+      AI: {
+        run: vi.fn().mockResolvedValue({ data: [[0.1, 0.2, 0.3]] }),
+      },
+      VECTORIZE_INDEX: {
+        query: vi.fn().mockResolvedValue({
+          matches: [
+            {
+              id: 'short-vector-id',
+              score: 0.95,
+              metadata: {
+                chunkId: 'planning-2-immobilization-radiation-planning-chatbot-005-01',
+              },
+            },
+          ],
+        }),
+      },
+    }
+
+    const results = await retrieveHybridForQuestion(
+      interpretedQuestion({
+        englishSearchQuery: 'why is an immobilisation mask used during radiation therapy',
+        category: 'planning',
+        treatmentAreas: ['head_neck'],
+        treatmentAreaConfidence: 0.95,
+        keyTerms: ['mask', 'immobilisation'],
+      }),
+      'Why is a mask used during radiation?',
+      env,
+      6,
+    )
+
+    expect(env.AI?.run).toHaveBeenCalled()
+    expect(env.VECTORIZE_INDEX?.query).toHaveBeenCalled()
+    expect(results[0]?.chunk.id).toBe('planning-2-immobilization-radiation-planning-chatbot-005-01')
+    expect(results[0]?.matchReasons.some((reason) => reason.startsWith('vector:'))).toBe(true)
+  })
+
+  it('falls back to lexical retrieval when Vectorize fails', async () => {
+    const env: Env = {
+      AI: {
+        run: vi.fn().mockResolvedValue({ data: [[0.1, 0.2, 0.3]] }),
+      },
+      VECTORIZE_INDEX: {
+        query: vi.fn().mockRejectedValue(new Error('Vectorize unavailable')),
+      },
+    }
+
+    const results = await retrieveHybridForQuestion(
+      interpretedQuestion({
+        englishSearchQuery: 'urine burning during pelvic radiation',
+        category: 'side_effect',
+        treatmentAreas: ['pelvis'],
+        treatmentAreaConfidence: 0.95,
+        keyTerms: ['urine', 'burning', 'pelvis'],
+      }),
+      'Pelvic radiation valla urine burning untunda?',
+      env,
+      6,
+    )
+
+    expect(env.VECTORIZE_INDEX?.query).toHaveBeenCalled()
+    expect(results.length).toBeGreaterThan(0)
+    expect(results.some((result) => result.chunk.treatmentAreas.includes('pelvis'))).toBe(true)
   })
 })

@@ -174,6 +174,77 @@ describe('Cloudflare Worker chat API', () => {
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
   })
 
+  it('uses Workers AI and Vectorize before Groq when RAG bindings are configured', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  detectedLanguage: 'en',
+                  responseLanguage: 'en',
+                  englishSearchQuery: 'why is an immobilisation mask used during radiation therapy',
+                  category: 'planning',
+                  treatmentAreas: ['head_neck'],
+                  treatmentAreaConfidence: 0.95,
+                  keyTerms: ['mask', 'immobilisation'],
+                  isOutsideScope: false,
+                }),
+              },
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  answer: 'A mask helps keep the treatment position consistent.',
+                  suggestions: [{ id: 'explain-more', label: 'Explain more', action: 'explain_more' }],
+                  sourceIds: ['planning-2-immobilization-radiation-planning-chatbot-005-01'],
+                  needsDoctorDiscussion: false,
+                }),
+              },
+            },
+          ],
+        }),
+      )
+    const aiRunMock = vi.fn().mockResolvedValue({ data: [[0.1, 0.2, 0.3]] })
+    const vectorQueryMock = vi.fn().mockResolvedValue({
+      matches: [
+        {
+          id: 'short-vector-id',
+          score: 0.96,
+          metadata: {
+            chunkId: 'planning-2-immobilization-radiation-planning-chatbot-005-01',
+          },
+        },
+      ],
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const response = await worker.fetch(
+      chatRequest({ language: 'en', question: 'Why is a mask used during radiation?' }),
+      {
+        ...baseEnv,
+        GROQ_API_KEY: 'test-key',
+        AI: { run: aiRunMock },
+        VECTORIZE_INDEX: { query: vectorQueryMock },
+      },
+    )
+    const json = (await response.json()) as { sources: Array<{ id: string }> }
+
+    expect(response.status).toBe(200)
+    expect(aiRunMock).toHaveBeenCalledWith('@cf/baai/bge-base-en-v1.5', expect.objectContaining({ text: expect.any(Array) }))
+    expect(vectorQueryMock).toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(json.sources[0]?.id).toBe('planning-2-immobilization-radiation-planning-chatbot-005-01')
+  })
+
   it('returns Telugu follow-up suggestions with Explain More in fallback mode', async () => {
     const response = await worker.fetch(
       chatRequest({ language: 'te', question: 'Radiation mask enduku vestaru?', action: 'normal', history: [] }),
@@ -194,9 +265,16 @@ describe('Cloudflare Worker chat API', () => {
     ['outside scope', 'Who will win the cricket match?'],
   ])('blocks unsafe or out-of-scope questions before Groq: %s', async (_label, question) => {
     const fetchMock = vi.fn<typeof fetch>()
+    const aiRunMock = vi.fn()
+    const vectorQueryMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
 
-    const response = await worker.fetch(chatRequest({ language: 'en', question }), { ...baseEnv, GROQ_API_KEY: 'test-key' })
+    const response = await worker.fetch(chatRequest({ language: 'en', question }), {
+      ...baseEnv,
+      GROQ_API_KEY: 'test-key',
+      AI: { run: aiRunMock },
+      VECTORIZE_INDEX: { query: vectorQueryMock },
+    })
     const json = (await response.json()) as {
       answer: string
       needsDoctorDiscussion: boolean
@@ -206,6 +284,8 @@ describe('Cloudflare Worker chat API', () => {
 
     expect(response.status).toBe(200)
     expect(fetchMock).not.toHaveBeenCalled()
+    expect(aiRunMock).not.toHaveBeenCalled()
+    expect(vectorQueryMock).not.toHaveBeenCalled()
     expect(json.needsDoctorDiscussion).toBe(true)
     expect(json.sources).toEqual([])
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)

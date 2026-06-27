@@ -1,7 +1,7 @@
 import { generateAnswer } from './answer'
 import { buildFallbackAnswer } from './fallback'
 import { interpretQuestion } from './interpretQuestion'
-import { retrieveForQuestion, toSourceLabels } from './retrieve'
+import { retrieveHybridForQuestion, toSourceLabels } from './retrieve'
 import { buildSafetyAnswer, classifySafety } from './safety'
 import { parseChatRequest, parsePositiveInteger, type ChatAnswer, type ChatResponse, type Env } from './schemas'
 
@@ -64,7 +64,7 @@ export default {
       )
     }
 
-    const retrievalResults = retrieveForQuestion(interpreted, chatRequest.question, 6)
+    const retrievalResults = await retrieveHybridForQuestion(interpreted, chatRequest.question, env, 6)
     const retrievedChunks = retrievalResults.map((result) => result.chunk)
 
     let answer: ChatAnswer

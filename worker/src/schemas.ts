@@ -4,11 +4,37 @@ export type ChatAction = 'normal' | 'explain_more'
 export interface Env {
   GROQ_API_KEY?: string
   GROQ_MODEL?: string
+  AI?: WorkersAiBinding
+  VECTORIZE_INDEX?: VectorizeBinding
+  EMBEDDING_MODEL?: string
   ALLOWED_ORIGIN?: string
   ALLOWED_ORIGINS?: string
   MAX_OUTPUT_TOKENS_NORMAL?: string
   MAX_OUTPUT_TOKENS_EXPANDED?: string
   MAX_HISTORY_MESSAGES?: string
+}
+
+export interface WorkersAiBinding {
+  run(model: string, input: unknown): Promise<unknown>
+}
+
+export interface VectorizeBinding {
+  query(
+    vector: number[],
+    options?: {
+      topK?: number
+      returnMetadata?: boolean | 'all' | 'indexed' | 'none'
+      returnValues?: boolean
+      filter?: Record<string, unknown>
+    },
+  ): Promise<{
+    matches: Array<{
+      id: string
+      score: number
+      metadata?: Record<string, unknown>
+    }>
+    count?: number
+  }>
 }
 
 export interface ChatHistoryMessage {

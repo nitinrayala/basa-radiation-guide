@@ -4,10 +4,11 @@ import {
   classifyCategory,
   classifyTreatmentAreas,
   containsMedicationInstruction,
+  getSourcePriority,
   requiresDoctorConfirmation,
 } from './classify'
-import { extractedCorpusPath, frontendKnowledgeChunksPath, knowledgeChunksPath } from './paths'
-import type { ExtractedCorpus, ExtractedSection, KnowledgeChunk } from './schema'
+import { extractedCorpusPath, frontendKnowledgeChunksPath, knowledgeChunksPath, ocrReviewPath } from './paths'
+import type { ExtractedCorpus, ExtractedSection, KnowledgeChunk, OcrReviewEntry } from './schema'
 
 function normalizeLine(value: string): string {
   return value
@@ -177,21 +178,57 @@ function chunkSection(section: ExtractedSection): KnowledgeChunk[] {
       sourcePriority: section.sourcePriority,
       containsMedicationInstruction: containsMedicationInstruction(fullText),
       requiresDoctorConfirmation: requiresDoctorConfirmation(fullText),
+      contentSource: section.contentSource ?? 'document_text',
+      ...(section.reviewStatus ? { reviewStatus: section.reviewStatus } : {}),
     }
+  })
+}
+
+async function readApprovedOcrSections(): Promise<ExtractedSection[]> {
+  let entries: OcrReviewEntry[]
+  try {
+    entries = JSON.parse(await readFile(ocrReviewPath, 'utf8')) as OcrReviewEntry[]
+  } catch {
+    return []
+  }
+
+  return entries.flatMap((entry, index): ExtractedSection[] => {
+    if (entry.status !== 'approved') return []
+    const text = normalizeBlock([entry.proposedText || entry.rawOcrText])
+    if (!text) return []
+
+    return [
+      {
+        id: `ocr-${slugify(entry.sourceFile.replace(extname(entry.sourceFile), ''))}-${slugify(entry.sourceLocation)}-${slugify(entry.imageId)}`,
+        sourceFile: entry.sourceFile,
+        sourceType: extname(entry.sourceFile).toLowerCase() === '.pptx' ? 'pptx' : 'docx',
+        sourceLocation: `${entry.sourceLocation} ${entry.imageId}`,
+        sourcePriority: getSourcePriority(entry.sourceFile),
+        title: `Reviewed image text from ${entry.sourceLocation}`,
+        text,
+        order: 10_000 + index,
+        contentSource: 'ocr_reviewed',
+        reviewStatus: 'approved',
+      },
+    ]
   })
 }
 
 async function buildKnowledgeChunks() {
   const rawCorpus = await readFile(extractedCorpusPath, 'utf8')
   const corpus = JSON.parse(rawCorpus) as ExtractedCorpus
-  const chunks = corpus.documents.flatMap((document) => document.sections.flatMap(chunkSection))
+  const approvedOcrSections = await readApprovedOcrSections()
+  const chunks = [
+    ...corpus.documents.flatMap((document) => document.sections.flatMap(chunkSection)),
+    ...approvedOcrSections.flatMap(chunkSection),
+  ]
 
   await mkdir(dirname(knowledgeChunksPath), { recursive: true })
   await mkdir(dirname(frontendKnowledgeChunksPath), { recursive: true })
   await writeFile(knowledgeChunksPath, `${JSON.stringify(chunks, null, 2)}\n`, 'utf8')
   await writeFile(frontendKnowledgeChunksPath, `${JSON.stringify(chunks, null, 2)}\n`, 'utf8')
 
-  console.log(`Built ${chunks.length} knowledge chunks from ${corpus.documents.length} source documents.`)
+  console.log(`Built ${chunks.length} knowledge chunks from ${corpus.documents.length} source documents and ${approvedOcrSections.length} approved OCR sections.`)
   console.log(`Wrote knowledge chunks to ${knowledgeChunksPath}`)
   console.log(`Wrote frontend copy to ${frontendKnowledgeChunksPath}`)
 }

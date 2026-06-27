@@ -4,7 +4,15 @@ compatibility_date = "2026-06-16"
 
 [vars]
 GROQ_MODEL = "llama-3.1-8b-instant"
+EMBEDDING_MODEL = "@cf/baai/bge-base-en-v1.5"
 ALLOWED_ORIGINS = "https://nitinrayala.github.io,http://localhost:5173,http://127.0.0.1:5173"
 MAX_OUTPUT_TOKENS_NORMAL = "850"
 MAX_OUTPUT_TOKENS_EXPANDED = "1400"
 MAX_HISTORY_MESSAGES = "6"
+
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "VECTORIZE_INDEX"
+index_name = "basa-radiation-guide"

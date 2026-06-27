@@ -1,14 +1,25 @@
 import { access, readFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
-import { categories, specificityValues, treatmentAreas, type ExtractedCorpus, type KnowledgeChunk } from './schema'
+import {
+  categories,
+  contentSourceValues,
+  ocrReviewStatuses,
+  specificityValues,
+  treatmentAreas,
+  type ExtractedCorpus,
+  type KnowledgeChunk,
+  type OcrReviewEntry,
+} from './schema'
 import { expectedSourceDocuments } from './sourceDocuments'
-import { extractedCorpusPath, knowledgeChunksPath, sourceDir } from './paths'
+import { extractedCorpusPath, knowledgeChunksPath, ocrReviewPath, sourceDir } from './paths'
 import { getSourcePriority } from './classify'
 
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const categorySet = new Set<string>(categories)
 const treatmentAreaSet = new Set<string>(treatmentAreas)
 const specificitySet = new Set<string>(specificityValues)
+const contentSourceSet = new Set<string>(contentSourceValues)
+const ocrReviewStatusSet = new Set<string>(ocrReviewStatuses)
 const expectedSourceSet = new Set<string>(expectedSourceDocuments)
 const badEncodingPattern = /[\u00c3\u00c2\ufffd]|\u00e0\u00b0|\u00e0\u00b1/u
 const decorativeArtifactPattern = /[\u{1f3ac}\u2705]|\bText overlay:|\bText on screen:|\bOptional Voiceover:|\bImage:|\bScene \d+/iu
@@ -155,6 +166,18 @@ function validateKnowledgeChunks(chunks: KnowledgeChunk[], corpus: ExtractedCorp
     if (typeof chunk.containsMedicationInstruction !== 'boolean' || typeof chunk.requiresDoctorConfirmation !== 'boolean') {
       throw new Error(`Chunk ${chunk.id} has invalid safety flags.`)
     }
+
+    if (!contentSourceSet.has(chunk.contentSource)) {
+      throw new Error(`Chunk ${chunk.id} has invalid content source.`)
+    }
+
+    if (chunk.contentSource === 'ocr_reviewed' && chunk.reviewStatus !== 'approved') {
+      throw new Error(`OCR chunk ${chunk.id} must have approved review status.`)
+    }
+
+    if (chunk.contentSource === 'document_text' && chunk.reviewStatus) {
+      throw new Error(`Document text chunk ${chunk.id} must not have OCR review status.`)
+    }
   }
 
   const extractableSourceFiles = corpus.documents
@@ -173,15 +196,60 @@ function validateKnowledgeChunks(chunks: KnowledgeChunk[], corpus: ExtractedCorp
   }
 }
 
+function validateOcrReview(entries: OcrReviewEntry[]) {
+  const ids = new Set<string>()
+
+  for (const entry of entries) {
+    const id = `${entry.sourceFile}|${entry.sourceLocation}|${entry.imageId}`
+    if (ids.has(id)) {
+      throw new Error(`Duplicate OCR review candidate: ${id}`)
+    }
+    ids.add(id)
+
+    if (!expectedSourceSet.has(entry.sourceFile)) {
+      throw new Error(`OCR review candidate has unexpected source file: ${entry.sourceFile}`)
+    }
+
+    if (!entry.sourceLocation || !entry.imageId || !entry.imagePath) {
+      throw new Error(`OCR review candidate ${id} is missing required metadata.`)
+    }
+
+    if (!ocrReviewStatusSet.has(entry.status)) {
+      throw new Error(`OCR review candidate ${id} has invalid status: ${entry.status}`)
+    }
+
+    if (entry.status === 'approved' && !(entry.proposedText || entry.rawOcrText).trim()) {
+      throw new Error(`Approved OCR review candidate ${id} has no reviewed text.`)
+    }
+
+    if (entry.status === 'approved') {
+      const reviewedText = entry.proposedText || entry.rawOcrText
+      if (badEncodingPattern.test(reviewedText)) {
+        throw new Error(`Approved OCR review candidate ${id} contains corrupted text encoding artifacts.`)
+      }
+
+      if (decorativeArtifactPattern.test(reviewedText)) {
+        throw new Error(`Approved OCR review candidate ${id} contains decorative storyboard artifacts.`)
+      }
+
+      if (contactArtifactPattern.test(reviewedText)) {
+        throw new Error(`Approved OCR review candidate ${id} contains contact or patient-identifying template text.`)
+      }
+    }
+  }
+}
+
 async function validateContent() {
   await validateSourceDocuments()
   const corpus = await readJson<ExtractedCorpus>(extractedCorpusPath)
   validateExtractedCorpus(corpus)
+  const ocrReview = await readJson<OcrReviewEntry[]>(ocrReviewPath)
+  validateOcrReview(ocrReview)
   const chunks = await readJson<KnowledgeChunk[]>(knowledgeChunksPath)
   validateKnowledgeChunks(chunks, corpus)
 
   console.log(`Validated ${expectedSourceDocuments.length} source documents.`)
-  console.log(`Validated ${corpus.documents.length} extracted documents and ${chunks.length} knowledge chunks.`)
+  console.log(`Validated ${corpus.documents.length} extracted documents, ${ocrReview.length} OCR review candidates and ${chunks.length} knowledge chunks.`)
 }
 
 await validateContent()

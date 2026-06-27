@@ -33,6 +33,14 @@ export const specificityValues = ['general', 'treatment_specific'] as const
 
 export type Specificity = (typeof specificityValues)[number]
 
+export const contentSourceValues = ['document_text', 'ocr_reviewed'] as const
+
+export type ContentSource = (typeof contentSourceValues)[number]
+
+export const ocrReviewStatuses = ['pending', 'approved', 'rejected'] as const
+
+export type OcrReviewStatus = (typeof ocrReviewStatuses)[number]
+
 export interface ExtractedSection {
   id: string
   sourceFile: string
@@ -42,6 +50,8 @@ export interface ExtractedSection {
   title: string
   text: string
   order: number
+  contentSource?: ContentSource
+  reviewStatus?: 'approved'
 }
 
 export interface ExtractedDocument {
@@ -72,4 +82,17 @@ export interface KnowledgeChunk {
   sourcePriority: number
   containsMedicationInstruction: boolean
   requiresDoctorConfirmation: boolean
+  contentSource: ContentSource
+  reviewStatus?: 'approved'
+}
+
+export interface OcrReviewEntry {
+  sourceFile: string
+  sourceLocation: string
+  imageId: string
+  imagePath: string
+  rawOcrText: string
+  proposedText: string
+  status: OcrReviewStatus
+  notes?: string
 }

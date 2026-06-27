@@ -71,6 +71,7 @@ describe('local document retrieval', () => {
         sourcePriority: 7,
         containsMedicationInstruction: false,
         requiresDoctorConfirmation: false,
+        contentSource: 'document_text',
       },
       {
         id: 'high-priority-mask',
@@ -83,6 +84,7 @@ describe('local document retrieval', () => {
         sourcePriority: 1,
         containsMedicationInstruction: false,
         requiresDoctorConfirmation: false,
+        contentSource: 'document_text',
       },
     ]
 
