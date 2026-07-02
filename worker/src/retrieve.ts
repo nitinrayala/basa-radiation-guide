@@ -82,7 +82,7 @@ function mergeRetrievalResults(
 
   for (const match of vectorMatches) {
     const existing = merged.get(match.chunk.id)
-    const vectorScore = match.score * 40
+    const vectorScore = match.score * 18
     if (existing) {
       existing.score += vectorScore
       existing.matchReasons.push(`vector:${match.score.toFixed(3)}`)
@@ -101,6 +101,25 @@ function mergeRetrievalResults(
       return left.chunk.sourcePriority - right.chunk.sourcePriority
     })
     .slice(0, limit)
+}
+
+function keepStrongLexicalAnchors(lexicalResults: RetrievalResult[], mergedResults: RetrievalResult[], limit: number): RetrievalResult[] {
+  const seen = new Set<string>()
+  const anchored: RetrievalResult[] = []
+  const mergedById = new Map(mergedResults.map((result) => [result.chunk.id, result]))
+  const strongLexicalResults = lexicalResults
+    .filter((result) => result.score >= 18)
+    .slice(0, 2)
+    .map((result) => mergedById.get(result.chunk.id) ?? result)
+
+  for (const result of [...strongLexicalResults, ...mergedResults]) {
+    if (seen.has(result.chunk.id)) continue
+    seen.add(result.chunk.id)
+    anchored.push(result)
+    if (anchored.length >= limit) return anchored
+  }
+
+  return anchored
 }
 
 export async function retrieveHybridForQuestion(
@@ -148,7 +167,7 @@ export async function retrieveHybridForQuestion(
       return lexicalResults.slice(0, limit)
     }
 
-    return mergeRetrievalResults(lexicalResults, vectorMatches, limit)
+    return keepStrongLexicalAnchors(lexicalResults, mergeRetrievalResults(lexicalResults, vectorMatches, limit), limit)
   } catch {
     return lexicalResults.slice(0, limit)
   }

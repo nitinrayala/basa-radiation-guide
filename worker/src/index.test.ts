@@ -51,11 +51,10 @@ describe('Cloudflare Worker chat API', () => {
     const json = (await response.json()) as { answer: string; suggestions: Array<{ label: string; action: string }>; sources: Array<{ id: string }> }
 
     expect(response.status).toBe(200)
-    expect(json.answer).toMatch(/could not prepare a reliable answer/i)
-    expect(json.answer).not.toMatch(/Thermoplastic mask|Immobilization|Radiation Planning/i)
+    expect(json.answer).toMatch(/temporarily unavailable|available material/i)
     expect(json.suggestions.some((suggestion) => suggestion.label === 'Will the mask feel tight?')).toBe(true)
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
-    expect(json.sources).toEqual([])
+    expect(json.sources.length).toBeGreaterThan(0)
   })
 
   it('calls Groq interpretation and answer generation when configured', async () => {
@@ -97,6 +96,23 @@ describe('Cloudflare Worker chat API', () => {
           ],
         }),
       )
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  answer:
+                    'A radiation mask helps keep your head and neck in the same position each day so the treatment can be planned and delivered accurately. It is part of immobilization, which means helping the body stay still during planning and treatment.\n\nWhat to expect:\n- The team may make a thermoplastic mask that fits your face and head-and-neck area.\n- The mask helps reduce movement during the planning scan and treatment sessions.\n- Marks and setup information help the radiation team reproduce the same position.\n\nKey notes:\n- Tell the team if the mask feels too tight or uncomfortable.\n- Follow the setup instructions from your radiation team because the exact process can vary with your treatment plan.',
+                  suggestions: [{ id: 'explain-more', label: 'Explain more', action: 'explain_more' }],
+                  sourceIds: ['planning-2-immobilization-radiation-planning-chatbot-005-01'],
+                  needsDoctorDiscussion: false,
+                }),
+              },
+            },
+          ],
+        }),
+      )
 
     vi.stubGlobal('fetch', fetchMock)
 
@@ -107,11 +123,12 @@ describe('Cloudflare Worker chat API', () => {
     const json = (await response.json()) as { answer: string; suggestions: Array<{ action: string }>; sources: Array<{ id: string }> }
 
     expect(response.status).toBe(200)
-    expect(json.answer).toBe('A mask helps keep the treatment position consistent.')
+    expect(json.answer).toMatch(/What to expect/)
+    expect(json.answer).toMatch(/thermoplastic mask|same position/i)
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
     expect(json.suggestions.length).toBeGreaterThanOrEqual(3)
     expect(json.sources[0]?.id).toBe('planning-2-immobilization-radiation-planning-chatbot-005-01')
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
     expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
       model: 'llama-3.1-8b-instant',
       max_completion_tokens: 180,
@@ -120,9 +137,16 @@ describe('Cloudflare Worker chat API', () => {
     expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toMatchObject({
       model: 'llama-3.1-8b-instant',
       max_completion_tokens: 850,
-      temperature: 1,
+      temperature: 0.7,
       top_p: 1,
     })
+    expect(JSON.parse(String(fetchMock.mock.calls[2]?.[1]?.body))).toMatchObject({
+      model: 'llama-3.1-8b-instant',
+      max_completion_tokens: 850,
+      temperature: 0.7,
+      top_p: 1,
+    })
+    expect(String(fetchMock.mock.calls[2]?.[1]?.body)).toContain('Quality correction')
   })
 
   it('uses a non-JSON Groq answer instead of showing the fallback message', async () => {
@@ -159,6 +183,23 @@ describe('Cloudflare Worker chat API', () => {
           ],
         }),
       )
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  answer:
+                    'A planning scan helps your radiation team prepare your treatment position and plan before treatment starts. It gives the team the information they need to decide how you should lie, how your body should be supported, and how treatment should be delivered safely.\n\nWhat to expect:\n- The team may position you carefully on the scan table.\n- Immobilization devices may be used to help you stay in the same position.\n- The scan information is used for treatment planning before treatment begins.\n\nKey notes:\n- Try to stay still during the scan when asked.\n- Ask the team if you feel uncomfortable or need help with the position.',
+                  suggestions: [{ id: 'explain-more', label: 'Explain more', action: 'explain_more' }],
+                  sourceIds: ['planning-ct-scan'],
+                  needsDoctorDiscussion: false,
+                }),
+              },
+            },
+          ],
+        }),
+      )
 
     vi.stubGlobal('fetch', fetchMock)
 
@@ -169,7 +210,8 @@ describe('Cloudflare Worker chat API', () => {
     const json = (await response.json()) as { answer: string; suggestions: Array<{ action: string }> }
 
     expect(response.status).toBe(200)
-    expect(json.answer).toBe('A planning scan helps the team prepare your treatment position and plan.')
+    expect(json.answer).toMatch(/What to expect/)
+    expect(json.answer).toMatch(/position|planning/i)
     expect(json.answer).not.toMatch(/could not prepare/i)
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
   })
@@ -213,6 +255,23 @@ describe('Cloudflare Worker chat API', () => {
           ],
         }),
       )
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  answer:
+                    'A radiation mask helps keep your head and neck in the same position for planning and treatment. This is important because even small movements can affect how accurately the treatment area is lined up.\n\nWhat to expect:\n- The mask is used as an immobilization support.\n- It helps the team reproduce the same treatment position each day.\n- The planning information and setup marks guide the radiation team.\n\nKey notes:\n- Tell the team if the mask feels too tight or uncomfortable.\n- Follow your radiation team’s setup instructions because the exact process can vary.',
+                  suggestions: [{ id: 'explain-more', label: 'Explain more', action: 'explain_more' }],
+                  sourceIds: ['planning-2-immobilization-radiation-planning-chatbot-005-01'],
+                  needsDoctorDiscussion: false,
+                }),
+              },
+            },
+          ],
+        }),
+      )
     const aiRunMock = vi.fn().mockResolvedValue({ data: [[0.1, 0.2, 0.3]] })
     const vectorQueryMock = vi.fn().mockResolvedValue({
       matches: [
@@ -241,7 +300,7 @@ describe('Cloudflare Worker chat API', () => {
     expect(response.status).toBe(200)
     expect(aiRunMock).toHaveBeenCalledWith('@cf/baai/bge-base-en-v1.5', expect.objectContaining({ text: expect.any(Array) }))
     expect(vectorQueryMock).toHaveBeenCalled()
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
     expect(json.sources[0]?.id).toBe('planning-2-immobilization-radiation-planning-chatbot-005-01')
   })
 

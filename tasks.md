@@ -132,3 +132,12 @@
   - [x] Kept lexical retrieval as fallback when Workers AI or Vectorize is unavailable.
   - [x] Added `rag:index` for hosted Workers AI embedding and Vectorize upsert.
   - [x] Added tests for OCR gating, hybrid retrieval, safety prechecks and deployment config.
+- [x] Global typed-answer quality contract
+  - [x] Replaced category-specific answer-plan wording with one shared answer structure for every topic.
+  - [x] Required direct explanation, concrete source-backed bullets, key notes and team reminders when supported.
+  - [x] Added a generic Worker quality gate that retries once when Groq returns a thin answer despite detailed source content.
+  - [x] Lowered answer temperature from `1` to `0.7` for steadier complete patient answers.
+  - [x] Preserved strong lexical retrieval matches ahead of Vectorize-only matches so exact source hits stay visible.
+  - [x] Added cleaned source-backed fallback bullets when Groq fails or still returns a thin answer.
+  - [x] Updated Worker tests so short mocked answers must be rewritten into fuller patient-facing responses.
+  - [x] Verified lint, typecheck, tests, content validation and production build pass.
