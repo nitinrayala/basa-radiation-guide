@@ -216,6 +216,61 @@ describe('Cloudflare Worker chat API', () => {
     expect(json.suggestions.some((suggestion) => suggestion.action === 'explain_more')).toBe(true)
   })
 
+  it('repairs thin answers with clean source-backed bullets instead of OCR fragments', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  detectedLanguage: 'en',
+                  responseLanguage: 'en',
+                  englishSearchQuery: 'head and back exercises after surgery rehabilitation',
+                  category: 'rehabilitation',
+                  treatmentAreas: ['head_neck'],
+                  treatmentAreaConfidence: 0.95,
+                  keyTerms: ['rehabilitation', 'exercise', 'head', 'back'],
+                  isOutsideScope: false,
+                }),
+              },
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  answer: 'Rehabilitation exercises after surgery are important to maintain mobility.',
+                  suggestions: [{ id: 'explain-more', label: 'Explain more', action: 'explain_more' }],
+                  sourceIds: ['rehabilitation-reviewed-image-text-from-slide-8-oncology-movement-blueprint-10007-01'],
+                  needsDoctorDiscussion: true,
+                }),
+              },
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(Response.json({ choices: [{ message: { content: '{bad json' } }] }))
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    const response = await worker.fetch(
+      chatRequest({ language: 'en', question: 'show head and back exercises for after surgery rehabilitation' }),
+      { ...baseEnv, GROQ_API_KEY: 'test-key' },
+    )
+    const json = (await response.json()) as { answer: string }
+
+    expect(response.status).toBe(200)
+    expect(json.answer).toMatch(/arm and chest stretching|chest and shoulder extension|shoulder stiffness/i)
+    expect(json.answer).not.toMatch(/Shoulder Rolls Elbow Stretch|Make a fist and squeeze slowly,\.|LS N|then bend z|\{bad json/i)
+    expect(json.answer).not.toMatch(/XEROM|mouth gargles|teaspoon|SWISH|SPIT|medications/i)
+  })
+
   it('uses Workers AI and Vectorize before Groq when RAG bindings are configured', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()

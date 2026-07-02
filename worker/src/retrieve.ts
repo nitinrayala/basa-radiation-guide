@@ -107,12 +107,16 @@ function keepStrongLexicalAnchors(lexicalResults: RetrievalResult[], mergedResul
   const seen = new Set<string>()
   const anchored: RetrievalResult[] = []
   const mergedById = new Map(mergedResults.map((result) => [result.chunk.id, result]))
+  const strongCategoryResults = lexicalResults
+    .filter((result) => result.score >= 18 && result.matchReasons.some((reason) => reason.startsWith('category:')))
+    .slice(0, 4)
+    .map((result) => mergedById.get(result.chunk.id) ?? result)
   const strongLexicalResults = lexicalResults
     .filter((result) => result.score >= 18)
     .slice(0, 2)
     .map((result) => mergedById.get(result.chunk.id) ?? result)
 
-  for (const result of [...strongLexicalResults, ...mergedResults]) {
+  for (const result of [...strongCategoryResults, ...strongLexicalResults, ...mergedResults]) {
     if (seen.has(result.chunk.id)) continue
     seen.add(result.chunk.id)
     anchored.push(result)

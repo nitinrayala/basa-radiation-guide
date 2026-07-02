@@ -20,9 +20,69 @@ function cleanPoint(text: string): string {
     .trim()
 }
 
+function canonicalSourcePoints(chunks: KnowledgeChunk[]): string[] {
+  const text = chunks.map((chunk) => chunk.content).join('\n').toLowerCase()
+  const points: string[] = []
+  const add = (condition: boolean, point: string) => {
+    if (condition && !points.includes(point)) points.push(point)
+  }
+
+  add(
+    /shoulder rolls|lift shoulders? slowly|lift your shoulder slowly|roll backwards?|roll backward/.test(text),
+    'Lift your shoulders slowly toward your ears, then roll them backward in a continuous motion.',
+  )
+  add(
+    /elbow stretch|touch your shoulder|straighten (your )?elbow|fully extend/.test(text),
+    'Bend your elbow and touch your shoulder with your hand, then straighten the elbow fully.',
+  )
+  add(
+    /wrist|support your elbow on a pillow|bend wrist back and forth/.test(text),
+    'Support your elbow on a pillow, keep your hand relaxed, and bend your wrist back and forth.',
+  )
+  add(
+    /hand squeeze|make a (slow,? )?(tight )?fist|open fingers|release fingers/.test(text),
+    'Make a slow fist, squeeze gently, then open and relax your fingers.',
+  )
+  add(
+    /wall crawl|fingers to pull your hands|crawl up the wall|slide back down/.test(text),
+    'For wall crawl, stand facing a wall and use your fingers to move your hands upward, then slide back down slowly.',
+  )
+  add(
+    /arm lift|lift arms over your head|clasp hands|hands behind neck|hands on head/.test(text),
+    'For arm and chest stretching, clasp your hands and lift or stretch within your comfort level.',
+  )
+  add(
+    /chin tuck|shoulder blades together|anchor your spine/.test(text),
+    'For neck and upper-back posture, gently tuck your chin and squeeze your shoulder blades together.',
+  )
+  add(
+    /bend head forward, back, left, and right|gently bend head forward|cervical/.test(text),
+    'For neck mobility, gently bend your head forward, back, left, and right while keeping posture controlled.',
+  )
+  add(
+    /clasp hands in front|stretch your head|elbows backwards|hands behind neck/.test(text),
+    'For chest and shoulder extension, clasp your hands as instructed and gently stretch the elbows backward.',
+  )
+  add(
+    /sharp pain|sudden discomfort|comfort level/.test(text),
+    'Stay within your comfort level, and pause if you feel sharp pain or sudden discomfort.',
+  )
+  add(
+    /shoulder stiffness|lymph ?edema|lymphedema/.test(text),
+    'Regular movement can help reduce the risk of shoulder stiffness and lymphedema.',
+  )
+
+  return points
+}
+
 function sourcePoints(chunks: KnowledgeChunk[]): string[] {
   const seen = new Set<string>()
   const points: Array<{ point: string; score: number }> = []
+
+  for (const point of canonicalSourcePoints(chunks)) {
+    seen.add(point.toLowerCase())
+    points.push({ point, score: 260 })
+  }
 
   for (const chunk of chunks) {
     const parts = chunk.content
@@ -34,10 +94,15 @@ function sourcePoints(chunks: KnowledgeChunk[]): string[] {
         if (hasActionOrCareTerm && (part.length < 22 || part.length > 220)) return false
         if (!hasActionOrCareTerm && part.length < 45) return false
         if (/[()\\=]/.test(part)) return false
+        if (/,\s*\.?$/.test(part)) return false
+        if (/\b(sachet|teaspoon|mouth gargles|swish|spit|medications?|tablet|capsule)\b/i.test(part)) return false
+        if (/\b\d+(?:\.\d+)?\s*(?:ml|mg|litre|liter)\b/i.test(part)) return false
         if (/\b(LS|Fd|wl|ope|ios|badge|marker|dashboard)\b/i.test(part)) return false
         if (/\bup towards your ears\b/i.test(part)) return false
         if (/\byour shoulder slowly your shoulder\b/i.test(part)) return false
         if (/\bthen bend z\b/i.test(part)) return false
+        if (/^shoulder rolls elbow stretch\.?$/i.test(part)) return false
+        if (/^support your elbow on a pillow\.?$/i.test(part)) return false
         return true
       })
       .filter((part) => /[a-zA-Z]{4,}/.test(part))
@@ -54,6 +119,7 @@ function sourcePoints(chunks: KnowledgeChunk[]): string[] {
 
   return points
     .sort((left, right) => right.score - left.score)
+    .filter((candidate) => !/\b(week\s*\d|mucositis|eesophagitis|medications?|nutrition supplements|mouth gargles|swish|spit|sachet|teaspoon)\b/i.test(candidate.point))
     .slice(0, 5)
     .map((candidate) => candidate.point)
 }
